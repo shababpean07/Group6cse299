@@ -55,10 +55,15 @@ const config: Config = {
         fadeUp: {
           '0%': { opacity: '0', transform: 'translateY(14px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeDown: {
+          '0%': { opacity: '0', transform: 'translateY(-14px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         }
       },
       animation: {
         'fade-up': 'fadeUp 0.5s ease-out forwards',
+        'fade-down': 'fadeDown 0.5s ease-out forwards',
       }
     },
   },

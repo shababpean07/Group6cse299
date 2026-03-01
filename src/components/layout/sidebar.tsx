@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Clubs", href: "/clubs", icon: Users },
   { label: "Events", href: "/events", icon: Calendar },
   { label: "Recruitment", href: "/recruitment", icon: UserPlus },

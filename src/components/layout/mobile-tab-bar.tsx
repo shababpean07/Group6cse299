@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const tabItems = [
-  { label: "Home", href: "/", icon: LayoutDashboard },
+  { label: "Home", href: "/dashboard", icon: LayoutDashboard },
   { label: "Clubs", href: "/clubs", icon: Users },
   { label: "Events", href: "/events", icon: Calendar },
   { label: "Recruit", href: "/recruitment", icon: UserPlus },

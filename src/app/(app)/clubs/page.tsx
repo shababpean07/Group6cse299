@@ -1,35 +1,68 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ClubCard } from "@/components/clubs/club-card";
+import { ClubCard, ClubCardProps } from "@/components/clubs/club-card";
 import { ClubSkeleton } from "@/components/clubs/club-skeleton";
-import { CLUBS_DATA } from "@/lib/data/clubs";
+import { clubsApi } from "@/lib/api";
 
 const FILTERS = ["All", "Academic", "Cultural", "Sports", "Tech", "Arts"];
+
+const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string; hex: string }> = {
+  Tech: { bg: "bg-[#e6f4f5]", border: "border-[#0D7377]", text: "text-[#0D7377]", hex: "#0D7377" },
+  Arts: { bg: "bg-[#fdf2f8]", border: "border-[#ec4899]", text: "text-[#ec4899]", hex: "#ec4899" },
+  Academic: { bg: "bg-[#eff6ff]", border: "border-[#3b82f6]", text: "text-[#3b82f6]", hex: "#3b82f6" },
+  Sports: { bg: "bg-[#fffbeb]", border: "border-[#f59e0b]", text: "text-[#f59e0b]", hex: "#f59e0b" },
+  Cultural: { bg: "bg-[#f5f3ff]", border: "border-[#8b5cf6]", text: "text-[#8b5cf6]", hex: "#8b5cf6" },
+};
+
+function transformClub(apiClub: any): ClubCardProps {
+  return {
+    id: apiClub.id,
+    name: apiClub.name,
+    category: apiClub.category,
+    desc: apiClub.description || apiClub.name,
+    members: apiClub._count?.members || 0,
+    accent: CATEGORY_COLORS[apiClub.category] || { bg: "bg-[#f5f6fa]", border: "border-[#8896b0]", text: "text-[#8896b0]", hex: "#8896b0" },
+  };
+}
 
 export default function ClubsDirectoryPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate network request for data
-  useEffect(() => {
+  const fetchClubs = async () => {
     setIsLoading(true);
-    const timer = setTimeout(() => {
+    setError(null);
+    try {
+      const data = await clubsApi.getAll({ category: activeFilter === "All" ? undefined : activeFilter });
+      setClubs(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch clubs");
+    } finally {
       setIsLoading(false);
-    }, 800); // 800ms fake loading
-    return () => clearTimeout(timer);
-  }, [activeFilter, searchQuery]);
+    }
+  };
 
-  // Derived state for filtered clubs
-  const filteredClubs = CLUBS_DATA.filter((club) => {
-    const matchesFilter = activeFilter === "All" || club.category === activeFilter;
-    const matchesSearch = club.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          club.desc.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  useEffect(() => {
+    fetchClubs();
+  }, [activeFilter]);
+
+  const filteredClubs = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return clubs.map(transformClub);
+    }
+    return clubs
+      .filter((club) =>
+        club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (club.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .map(transformClub);
+  }, [clubs, searchQuery]);
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-[1200px] mx-auto pb-10">
@@ -39,7 +72,7 @@ export default function ClubsDirectoryPage() {
         <div>
           <h1 className="font-syne text-[32px] font-bold text-[#0f1828] leading-tight mb-2">Club Directory</h1>
           <p className="text-[15px] font-medium text-[#8896b0]">
-            Discover {CLUBS_DATA.length} registered clubs at NSU
+            Discover {clubs.length} registered clubs at NSU
           </p>
         </div>
 

@@ -1,123 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Clock, MapPin, Calendar, ExternalLink } from "lucide-react";
+import { eventsApi } from "@/lib/api";
 
-// Mock Data
 const FILTERS = ["All", "Academic", "Cultural", "Sports", "Tech", "Arts"];
 const VIEWS = ["Month", "Week", "Agenda"];
 
-const EVENTS_DATA = [
-  {
-    id: "e1",
-    date: 5,
-    month: "MAR",
-    year: 2026,
-    category: "Academic",
-    name: "Spring Seminar",
-    club: "NSU Finance Club",
-    time: "10:00 AM - 12:00 PM",
-    venue: "AUDI 801",
-    bg: "bg-[#eff6ff]",
-    color: "text-[#3b82f6]",
-  },
-  {
-    id: "e2",
-    date: 10,
-    month: "MAR",
-    year: 2026,
-    category: "Tech",
-    name: "Intra-University Hackathon",
-    club: "NSU ACM SC",
-    time: "09:00 AM - 05:00 PM",
-    venue: "LIB 602",
-    bg: "bg-[rgba(13,115,119,0.12)]",
-    color: "text-[#0D7377]",
-  },
-  {
-    id: "e3",
-    date: 14,
-    month: "MAR",
-    year: 2026,
-    category: "Tech",
-    name: "Robot Showcase 2026",
-    club: "NSU Robotics Club",
-    time: "11:00 AM - 04:00 PM",
-    venue: "Plaza Area",
-    bg: "bg-[rgba(13,115,119,0.12)]",
-    color: "text-[#0D7377]",
-  },
-  {
-    id: "e4",
-    date: 17,
-    month: "MAR",
-    year: 2026,
-    category: "Arts",
-    name: "Photography Walk: Old Dhaka",
-    club: "NSU Photography Club",
-    time: "07:00 AM - 01:00 PM",
-    venue: "Off-campus",
-    bg: "bg-[#fdf2f8]",
-    color: "text-[#ec4899]",
-  },
-  {
-    id: "e5",
-    date: 19,
-    month: "MAR",
-    year: 2026,
-    category: "Cultural",
-    name: "Creative Pitch Deck",
-    club: "NSU Debate Club",
-    time: "02:00 PM - 05:00 PM",
-    venue: "NAC 201",
-    bg: "bg-[#f5f3ff]",
-    color: "text-[#8b5cf6]",
-  },
-  {
-    id: "e6",
-    date: 22,
-    month: "MAR",
-    year: 2026,
-    category: "Arts",
-    name: "Annual Stage Play 'Opekkha'",
-    club: "NSU Drama Club",
-    time: "06:00 PM - 09:00 PM",
-    venue: "Open Air Theatre",
-    bg: "bg-[#fdf2f8]",
-    color: "text-[#ec4899]",
-  },
-  {
-    id: "e7",
-    date: 28,
-    month: "MAR",
-    year: 2026,
-    category: "Academic",
-    name: "Brandverse 2026",
-    club: "NSU Marketing Club",
-    time: "10:00 AM - 04:00 PM",
-    venue: "Main Audi",
-    bg: "bg-[#eff6ff]",
-    color: "text-[#3b82f6]",
-  },
-];
+const CATEGORY_STYLES: Record<string, { bg: string; color: string }> = {
+  Tech: { bg: "bg-[rgba(13,115,119,0.12)]", color: "text-[#0D7377]" },
+  Arts: { bg: "bg-[#fdf2f8]", color: "text-[#ec4899]" },
+  Academic: { bg: "bg-[#eff6ff]", color: "text-[#3b82f6]" },
+  Sports: { bg: "bg-[#fffbeb]", color: "text-[#f59e0b]" },
+  Cultural: { bg: "bg-[#f5f3ff]", color: "text-[#8b5cf6]" },
+};
+
+function transformEvent(apiEvent: any) {
+  const startDate = new Date(apiEvent.startDate);
+  const endDate = new Date(apiEvent.endDate);
+  const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+  const styles = CATEGORY_STYLES[apiEvent.category] || { bg: "bg-[#f5f6fa]", color: "text-[#8896b0]" };
+
+  return {
+    id: apiEvent.id,
+    date: startDate.getDate(),
+    month: months[startDate.getMonth()],
+    year: startDate.getFullYear(),
+    category: apiEvent.category,
+    name: apiEvent.title,
+    club: apiEvent.club?.name || "Unknown Club",
+    time: `${formatTime(startDate)} - ${formatTime(endDate)}`,
+    venue: apiEvent.venue || (apiEvent.isOnline ? "Online" : "TBD"),
+    bg: styles.bg,
+    color: styles.color,
+  };
+}
 
 export default function EventCalendarPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeView, setActiveView] = useState("Month");
   const [popoverEventId, setPopoverEventId] = useState<string | null>(null);
-  const [weekStart, setWeekStart] = useState(1); // Default to week of Mar 1, 2026
+  const [weekStart, setWeekStart] = useState(1);
+  const [events, setEvents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // March 2026 constants
+  const today = new Date();
+  const currentMonth = today.getMonth() + 1;
+  const currentYear = today.getFullYear();
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await eventsApi.getAll({
+          category: activeFilter === "All" ? undefined : activeFilter,
+          month: String(currentMonth),
+          year: String(currentYear),
+        });
+        setEvents(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch events");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [activeFilter, currentMonth, currentYear]);
+
   const daysInMonth = 31;
-  const firstDayOfWeek = 0; // Mar 1, 2026 is Sunday (0)
-  const todayDate = 4; // Mock today
+  const firstDayOfWeek = 0;
+  const todayDate = today.getDate();
 
-  // Filtered Events
-  const filteredEvents = EVENTS_DATA.filter(
-    (e) => activeFilter === "All" || e.category === activeFilter
-  );
-
+  const filteredEvents = useMemo(() => {
+    return events.map(transformEvent);
+  }, [events]);
   // Grouped Events for Agenda View
   const groupedAgendaEvents = filteredEvents.reduce((acc, evt) => {
     if (!acc[evt.date]) acc[evt.date] = [];

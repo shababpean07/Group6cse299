@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, Plus_Jakarta_Sans } from "next/font/google";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const syne = Syne({ 
@@ -27,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${plusJakartaSans.variable}`}>
       <body className="font-sans antialiased">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

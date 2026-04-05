@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar,
   MapPin,
@@ -10,14 +10,12 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-/* ═══════════════════════════════════════════════════════════
-   TYPES
-   ═══════════════════════════════════════════════════════════ */
+import { useAuth } from "@/context/AuthContext";
+import { eventsApi } from "@/lib/api";
 
 type EventStatus = "Pending" | "Conflict" | "Approved" | "Rejected";
 
-interface MockEvent {
+interface EventType {
   id: string;
   name: string;
   club: string;
@@ -38,94 +36,34 @@ interface MockEvent {
   };
 }
 
-/* ═══════════════════════════════════════════════════════════
-   DATA
-   ═══════════════════════════════════════════════════════════ */
-
-const mockEvents: MockEvent[] = [
-  {
-    id: "1",
-    name: "Intra-University Hackathon",
-    club: "NSU ACM SC",
-    date: "10",
-    month: "Mar",
-    year: "2026",
-    time: "10:00 AM",
-    venue: "LIB 602",
-    expectedAttendance: 150,
-    submittedBy: "Arif Rahman",
-    submittedDate: "Mar 4",
-    submittedTime: "2:14 PM",
-    status: "Pending",
-  },
-  {
-    id: "2",
-    name: "Spring Fest Stage Show",
-    club: "NSU Drama Club",
-    date: "10",
-    month: "Mar",
-    year: "2026",
-    time: "6:00 PM",
-    venue: "Open Air Theatre",
-    expectedAttendance: 300,
-    submittedBy: "Nadia Hasan",
-    submittedDate: "Mar 5",
-    submittedTime: "11:30 AM",
-    status: "Conflict",
-    conflictWith: {
-      name: "Intra-University Hackathon",
-      club: "NSU ACM SC",
-      venue: "LIB 602",
-    },
-  },
-  {
-    id: "3",
-    name: "Robot Showcase 2026",
-    club: "NSU Robotics Club",
-    date: "14",
-    month: "Mar",
-    year: "2026",
-    time: "2:00 PM",
-    venue: "Plaza Area",
-    expectedAttendance: 200,
-    submittedBy: "Tanvir Ahmed",
-    submittedDate: "Mar 6",
-    submittedTime: "9:45 AM",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    name: "Photography Walk: Old Dhaka",
-    club: "NSU Photography",
-    date: "17",
-    month: "Mar",
-    year: "2026",
-    time: "7:00 AM",
-    venue: "Off-campus",
-    expectedAttendance: 40,
-    submittedBy: "Rifat Sultana",
-    submittedDate: "Mar 7",
-    submittedTime: "4:20 PM",
-    status: "Pending",
-  },
-  {
-    id: "5",
-    name: "Creative Pitch Deck",
-    club: "NSU Debate Club",
-    date: "19",
-    month: "Mar",
-    year: "2026",
-    time: "3:00 PM",
-    venue: "NAC 201",
-    expectedAttendance: 120,
-    submittedBy: "Imran Chowdhury",
-    submittedDate: "Mar 8",
-    submittedTime: "1:05 PM",
-    status: "Pending",
-  },
-];
-
 type FilterType = "All" | "Pending" | "Conflicting" | "Approved" | "Rejected";
+
+function transformApiEvent(apiEvent: any): EventType {
+  const startDate = new Date(apiEvent.startDate);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const submittedDate = new Date(apiEvent.createdAt);
+  
+  let status: EventStatus = "Pending";
+  if (apiEvent.status === "APPROVED") status = "Approved";
+  else if (apiEvent.status === "REJECTED") status = "Rejected";
+  else if (apiEvent.status === "PENDING_APPROVAL") status = "Pending";
+
+  return {
+    id: apiEvent.id,
+    name: apiEvent.title,
+    club: apiEvent.club?.name || "Unknown Club",
+    date: String(startDate.getDate()),
+    month: months[startDate.getMonth()],
+    year: String(startDate.getFullYear()),
+    time: startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    venue: apiEvent.venue || "TBD",
+    expectedAttendance: apiEvent._count?.rsvps || 50,
+    submittedBy: apiEvent.creator?.name || "Unknown",
+    submittedDate: submittedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    submittedTime: submittedDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    status,
+  };
+}
 
 /* ═══════════════════════════════════════════════════════════
    CONFLICT MODAL
@@ -136,7 +74,7 @@ function ConflictModal({
   onConfirm,
   onCancel,
 }: {
-  event: MockEvent;
+  event: EventType;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -226,7 +164,7 @@ function EventCard({
   onApprove,
   onReject,
 }: {
-  event: MockEvent;
+  event: EventType;
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
 }) {
@@ -447,8 +385,28 @@ function EmptyState() {
    ═══════════════════════════════════════════════════════════ */
 
 export default function SuperApprovalsPage() {
-  const [events, setEvents] = useState<MockEvent[]>(mockEvents);
+  const { user } = useAuth();
+  const [events, setEvents] = useState<EventType[]>([]);
   const [filter, setFilter] = useState<FilterType>("All");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await eventsApi.getAll({});
+        const transformed = data.map(transformApiEvent);
+        setEvents(transformed);
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user?.role === "SUPER_ADMIN") {
+      fetchEvents();
+    }
+  }, [user]);
 
   const filters: FilterType[] = ["All", "Pending", "Conflicting", "Approved", "Rejected"];
 

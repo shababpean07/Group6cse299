@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Search, AlertTriangle, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-/* ═══════════════════════════════════════════════════════════
-   TYPES & CONSTANTS
-   ═══════════════════════════════════════════════════════════ */
+import { useAuth } from "@/context/AuthContext";
+import { recruitmentApi } from "@/lib/api";
 
 type ApplicantStatus = "New" | "Interview" | "Accepted" | "Rejected";
 
@@ -29,27 +27,12 @@ const STATUS_FILTERS: { label: string; value: ApplicantStatus | "All" }[] = [
   { label: "Rejected", value: "Rejected" },
 ];
 
-const STATUS_STYLES: Record<ApplicantStatus, { bg: string; text: string }> = {
-  New: { bg: "bg-[#e6f4f5]", text: "text-[#0D7377]" },
-  Interview: { bg: "bg-[#FEF3C7]", text: "text-[#F59E0B]" },
-  Accepted: { bg: "bg-[#dcfce7]", text: "text-[#22c55e]" },
-  Rejected: { bg: "bg-[#fee2e2]", text: "text-[#EF4444]" },
+const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
+  NEW: { bg: "bg-[#e6f4f5]", text: "text-[#0D7377]" },
+  INTERVIEW: { bg: "bg-[#FEF3C7]", text: "text-[#F59E0B]" },
+  ACCEPTED: { bg: "bg-[#dcfce7]", text: "text-[#22c55e]" },
+  REJECTED: { bg: "bg-[#fee2e2]", text: "text-[#EF4444]" },
 };
-
-const APPLICANTS: ApplicantRow[] = [
-  { name: "Farhan Ahmed",    id: "2212345", email: "farhan.ahmed@northsouth.edu", position: "General Member",  date: "Mar 4",  status: "New",       dualClub: true },
-  { name: "Sadia Islam",     id: "2213456", email: "sadia.islam@northsouth.edu",  position: "Technical Team",  date: "Mar 3",  status: "Interview" },
-  { name: "Nusrat Jahan",    id: "2214567", email: "nusrat.jahan@northsouth.edu", position: "General Member",  date: "Mar 1",  status: "Accepted" },
-  { name: "Rakib Hossain",   id: "2215678", email: "rakib.hossain@northsouth.edu", position: "PR Team",       date: "Mar 4",  status: "New" },
-  { name: "Tanjim Hossain",  id: "2216789", email: "tanjim.hossain@northsouth.edu", position: "Event Team",   date: "Feb 28", status: "Rejected" },
-  { name: "Mehazabien C.",   id: "2217890", email: "mehazabien@northsouth.edu",   position: "General Member",  date: "Mar 2",  status: "Interview" },
-  { name: "Ashfaq Zaman",    id: "2218901", email: "ashfaq.zaman@northsouth.edu", position: "Technical Team",  date: "Mar 5",  status: "New" },
-  { name: "Fariha Haque",    id: "2219012", email: "fariha.haque@northsouth.edu", position: "PR Team",        date: "Mar 5",  status: "New" },
-];
-
-/* ═══════════════════════════════════════════════════════════
-   HELPERS
-   ═══════════════════════════════════════════════════════════ */
 
 function getInitials(name: string) {
   return name
@@ -60,22 +43,68 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN PAGE COMPONENT
-   ═══════════════════════════════════════════════════════════ */
+function transformApplication(app: any): ApplicantRow {
+  return {
+    id: app.id,
+    name: app.user?.name || "Unknown",
+    email: app.user?.email || "",
+    position: app.position,
+    date: new Date(app.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    status: app.status as ApplicantStatus,
+  };
+}
 
 export default function RecruitmentManagerPage() {
+  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState<ApplicantStatus | "All">("All");
   const [search, setSearch] = useState("");
+  const [applications, setApplications] = useState<ApplicantRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [recruitmentCycle, setRecruitmentCycle] = useState<any>(null);
 
-  const filtered = APPLICANTS.filter((a) => {
-    if (activeFilter !== "All" && a.status !== activeFilter) return false;
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      if (!a.name.toLowerCase().includes(q) && !a.id.includes(q)) return false;
-    }
-    return true;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user?.role !== "CLUB_ADMIN" || !user.clubId) return;
+
+      try {
+        const cycles = await recruitmentApi.getCycles({ clubId: user.clubId, status: "OPEN" });
+        if (cycles.length > 0) {
+          setRecruitmentCycle(cycles[0]);
+          const cycleData = await recruitmentApi.getCycleById(cycles[0].id);
+          setApplications(cycleData.applications?.map(transformApplication) || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recruitment data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  const filtered = useMemo(() => {
+    return applications.filter((a) => {
+      if (activeFilter !== "All" && a.status !== activeFilter) return false;
+      if (search.trim()) {
+        const q = search.trim().toLowerCase();
+        if (!a.name.toLowerCase().includes(q) && !a.id.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [applications, activeFilter, search]);
+
+  const getStatusStyle = (status: string) => {
+    return STATUS_STYLES[status] || { bg: "bg-[#f5f6fa]", text: "text-[#8896b0]" };
+  };
+
+  const getStatusLabel = (status: string) => {
+    return status.charAt(0) + status.slice(1).toLowerCase();
+  };
+
+  const newCount = applications.filter(a => a.status === "NEW").length;
+  const interviewCount = applications.filter(a => a.status === "INTERVIEW").length;
+  const acceptedCount = applications.filter(a => a.status === "ACCEPTED").length;
 
   return (
     <div className="flex flex-col gap-6 pb-10">
@@ -111,15 +140,17 @@ export default function RecruitmentManagerPage() {
           {/* Left: status */}
           <div className="flex items-center gap-3">
             <span className="relative flex h-3 w-3 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0D7377] opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0D7377]" />
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${recruitmentCycle?.status === "OPEN" ? "bg-[#0D7377]" : "bg-[#8896b0]"}`} />
+              <span className={`relative inline-flex rounded-full h-3 w-3 ${recruitmentCycle?.status === "OPEN" ? "bg-[#0D7377]" : "bg-[#8896b0]"}`} />
             </span>
             <div>
               <p className="font-syne font-[700] text-[14px] text-white">
-                Recruitment is OPEN
+                Recruitment is {recruitmentCycle?.status === "OPEN" ? "OPEN" : "CLOSED"}
               </p>
               <p className="text-[12px] text-[rgba(255,255,255,0.4)] mt-0.5">
-                Closes March 28, 2026 — 17 days remaining
+                {recruitmentCycle 
+                  ? `Closes ${new Date(recruitmentCycle.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                  : "No active recruitment cycle"}
               </p>
             </div>
           </div>
@@ -127,13 +158,13 @@ export default function RecruitmentManagerPage() {
           {/* Center: stat pills */}
           <div className="flex items-center gap-2">
             <span className="px-3.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-[12px] font-[600] text-white">
-              24 Applied
+              {applications.length} Applied
             </span>
             <span className="px-3.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-[12px] font-[600] text-white">
-              4 Interview
+              {interviewCount} Interview
             </span>
             <span className="px-3.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-[12px] font-[600] text-white">
-              2 Accepted
+              {acceptedCount} Accepted
             </span>
           </div>
 
@@ -270,11 +301,11 @@ export default function RecruitmentManagerPage() {
                           <span
                             className={cn(
                               "inline-block text-[11px] font-[700] px-2.5 py-1 rounded-full",
-                              STATUS_STYLES[a.status].bg,
-                              STATUS_STYLES[a.status].text
+                              getStatusStyle(a.status).bg,
+                              getStatusStyle(a.status).text
                             )}
                           >
-                            {a.status}
+                            {getStatusLabel(a.status)}
                           </span>
                           {a.dualClub && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-[600] px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#F59E0B]">
@@ -322,11 +353,11 @@ export default function RecruitmentManagerPage() {
                     <span
                       className={cn(
                         "text-[10px] font-[700] px-2.5 py-1 rounded-full shrink-0",
-                        STATUS_STYLES[a.status].bg,
-                        STATUS_STYLES[a.status].text
+                        getStatusStyle(a.status).bg,
+                        getStatusStyle(a.status).text
                       )}
                     >
-                      {a.status}
+                      {getStatusLabel(a.status)}
                     </span>
                   </div>
 

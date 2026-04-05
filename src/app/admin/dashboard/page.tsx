@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Users,
   Calendar,
@@ -11,85 +12,14 @@ import {
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-/* ═══════════════════════════════════════════════════════════
-   DATA
-   ═══════════════════════════════════════════════════════════ */
-
-const kpiCards = [
-  {
-    icon: Users,
-    value: "142",
-    label: "Registered Members",
-    iconColor: "#0D7377",
-    iconBg: "#e6f4f5",
-  },
-  {
-    icon: Calendar,
-    value: "3",
-    label: "Events This Month",
-    iconColor: "#0D7377",
-    iconBg: "#e6f4f5",
-  },
-  {
-    icon: Inbox,
-    value: "18",
-    label: "Pending Applications",
-    iconColor: "#F59E0B",
-    iconBg: "#FEF3C7",
-  },
-  {
-    icon: UserPlus,
-    value: "Open",
-    label: "Recruitment Cycle",
-    iconColor: "#22c55e",
-    iconBg: "#dcfce7",
-  },
-];
-
-const events = [
-  {
-    name: "Intra-University Hackathon",
-    day: "10",
-    month: "Mar",
-    venue: "LIB 602",
-    status: "Pending Approval" as const,
-  },
-  {
-    name: "Competitive Programming Bootcamp",
-    day: "18",
-    month: "Mar",
-    venue: "NAC 201",
-    status: "Approved" as const,
-  },
-  {
-    name: "AI Workshop: Intro to LLMs",
-    day: "02",
-    month: "Apr",
-    venue: "Online",
-    status: "Draft" as const,
-  },
-];
-
-const statusStyle = {
-  "Pending Approval": "bg-[#FEF3C7] text-[#F59E0B]",
-  Approved: "bg-[#dcfce7] text-[#22c55e]",
-  Draft: "bg-[#f5f6fa] text-[#8896b0]",
-} as const;
-
-const applicants = [
-  { name: "Farhan Ahmed",   id: "2212345", role: "General Member",  status: "New" as const,       date: "Mar 4" },
-  { name: "Sadia Islam",    id: "2213456", role: "Technical Team",  status: "Interview" as const,  date: "Mar 3" },
-  { name: "Nusrat Jahan",   id: "2214567", role: "General Member",  status: "Accepted" as const,   date: "Mar 1" },
-  { name: "Rakib Hossain",  id: "2215678", role: "PR Team",         status: "New" as const,        date: "Mar 4" },
-  { name: "Tanjim Hossain", id: "2216789", role: "Event Team",      status: "Rejected" as const,   date: "Feb 28" },
-];
+import { useAuth } from "@/context/AuthContext";
+import { dashboardApi } from "@/lib/api";
 
 const appStatusStyle = {
-  New:       "bg-[#e6f4f5] text-[#0D7377]",
-  Interview: "bg-[#FEF3C7] text-[#F59E0B]",
-  Accepted:  "bg-[#dcfce7] text-[#22c55e]",
-  Rejected:  "bg-[#fee2e2] text-[#EF4444]",
+  NEW:       "bg-[#e6f4f5] text-[#0D7377]",
+  INTERVIEW: "bg-[#FEF3C7] text-[#F59E0B]",
+  ACCEPTED:  "bg-[#dcfce7] text-[#22c55e]",
+  REJECTED:  "bg-[#fee2e2] text-[#EF4444]",
 } as const;
 
 const quickActions = [
@@ -98,10 +28,6 @@ const quickActions = [
   { emoji: "\uD83D\uDCCB", label: "Edit Club Profile",      href: "/admin/profile" },
   { emoji: "\u2699\uFE0F",  label: "Recruitment Settings",  href: "/admin/recruitment/settings" },
 ];
-
-/* ═══════════════════════════════════════════════════════════
-   HELPERS
-   ═══════════════════════════════════════════════════════════ */
 
 function getInitials(name: string) {
   return name
@@ -112,12 +38,121 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PAGE
-   ═══════════════════════════════════════════════════════════ */
+function getStatusStyle(status: string) {
+  switch (status) {
+    case "PENDING_APPROVAL": return "bg-[#FEF3C7] text-[#F59E0B]";
+    case "APPROVED": return "bg-[#dcfce7] text-[#22c55e]";
+    case "REJECTED": return "bg-[#fee2e2] text-[#EF4444]";
+    default: return "bg-[#f5f6fa] text-[#8896b0]";
+  }
+}
+
+function formatStatus(status: string) {
+  return status.replace(/_/g, " ");
+}
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      if (user?.role !== "CLUB_ADMIN") return;
+      
+      try {
+        const data = await dashboardApi.getClubAdminStats();
+        setDashboardData(data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, [user]);
+
+  const kpiCards = dashboardData ? [
+    {
+      icon: Users,
+      value: String(dashboardData.stats?.totalMembers || 0),
+      label: "Registered Members",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Calendar,
+      value: String(dashboardData.stats?.eventsThisMonth || 0),
+      label: "Events This Month",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Inbox,
+      value: String(dashboardData.stats?.pendingApplications || 0),
+      label: "Pending Applications",
+      iconColor: "#F59E0B",
+      iconBg: "#FEF3C7",
+    },
+    {
+      icon: UserPlus,
+      value: dashboardData.stats?.recruitmentCycle?.status === "OPEN" ? "Open" : "Closed",
+      label: "Recruitment Cycle",
+      iconColor: dashboardData.stats?.recruitmentCycle?.status === "OPEN" ? "#22c55e" : "#8896b0",
+      iconBg: dashboardData.stats?.recruitmentCycle?.status === "OPEN" ? "#dcfce7" : "#f5f6fa",
+    },
+  ] : [
+    {
+      icon: Users,
+      value: "—",
+      label: "Registered Members",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Calendar,
+      value: "—",
+      label: "Events This Month",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Inbox,
+      value: "—",
+      label: "Pending Applications",
+      iconColor: "#F59E0B",
+      iconBg: "#FEF3C7",
+    },
+    {
+      icon: UserPlus,
+      value: "—",
+      label: "Recruitment Cycle",
+      iconColor: "#22c55e",
+      iconBg: "#dcfce7",
+    },
+  ];
+
+  const events = dashboardData?.events?.map((evt: any) => {
+    const startDate = new Date(evt.startDate);
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return {
+      name: evt.title,
+      day: String(startDate.getDate()),
+      month: months[startDate.getMonth()],
+      venue: evt.venue || "TBD",
+      status: evt.status,
+    };
+  }) || [];
+
+  const applicants = dashboardData?.applications?.map((app: any) => ({
+    name: app.user?.name || "Unknown",
+    id: app.user?.studentId || app.user?.id || "—",
+    role: app.position,
+    status: app.status,
+    date: new Date(app.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+  })) || [];
 
   return (
     <div className="flex flex-col gap-8 pb-10">
@@ -190,45 +225,46 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-              {events.map((evt) => (
-                <div
-                  key={evt.name}
-                  className="bg-white border-[1.5px] border-[#e8ecf2] rounded-[12px] p-4 flex items-center gap-4 hover:border-[#0D7377] hover:shadow-[0_8px_24px_rgba(13,115,119,0.12)] hover:-translate-y-[2px] transition-all duration-200"
-                >
-                  {/* Date block */}
-                  <div className="w-12 h-12 rounded-[8px] bg-[#e6f4f5] flex flex-col items-center justify-center shrink-0">
-                    <span className="font-syne font-[700] text-[18px] text-[#0D7377] leading-none">
-                      {evt.day}
-                    </span>
-                    <span className="text-[9px] font-[700] uppercase text-[#8896b0] tracking-wider">
-                      {evt.month}
-                    </span>
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-syne font-[700] text-[14px] text-[#0f1828] truncate">
-                      {evt.name}
-                    </p>
-                    <p className="text-[12px] text-[#8896b0] mt-0.5 flex items-center gap-2">
-                      <span className="inline-block px-2 py-0.5 bg-[#f5f6fa] rounded text-[10px] font-[600] text-[#8896b0]">
-                        ACM SC
-                      </span>
-                      {evt.venue}
-                    </p>
-                  </div>
-
-                  {/* Status badge */}
-                  <span
-                    className={cn(
-                      "text-[11px] font-[700] px-3 py-1 rounded-full shrink-0 whitespace-nowrap",
-                      statusStyle[evt.status]
-                    )}
+              {events.length === 0 ? (
+                <p className="text-[14px] text-[#8896b0] text-center py-8">No events yet</p>
+              ) : (
+                events.map((evt: any) => (
+                  <div
+                    key={evt.name}
+                    className="bg-white border-[1.5px] border-[#e8ecf2] rounded-[12px] p-4 flex items-center gap-4 hover:border-[#0D7377] hover:shadow-[0_8px_24px_rgba(13,115,119,0.12)] hover:-translate-y-[2px] transition-all duration-200"
                   >
-                    {evt.status}
-                  </span>
-                </div>
-              ))}
+                    <div className="w-12 h-12 rounded-[8px] bg-[#e6f4f5] flex flex-col items-center justify-center shrink-0">
+                      <span className="font-syne font-[700] text-[18px] text-[#0D7377] leading-none">
+                        {evt.day}
+                      </span>
+                      <span className="text-[9px] font-[700] uppercase text-[#8896b0] tracking-wider">
+                        {evt.month}
+                      </span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="font-syne font-[700] text-[14px] text-[#0f1828] truncate">
+                        {evt.name}
+                      </p>
+                      <p className="text-[12px] text-[#8896b0] mt-0.5 flex items-center gap-2">
+                        <span className="inline-block px-2 py-0.5 bg-[#f5f6fa] rounded text-[10px] font-[600] text-[#8896b0]">
+                          {user?.clubId ? "Your Club" : "Club"}
+                        </span>
+                        {evt.venue}
+                      </p>
+                    </div>
+
+                    <span
+                      className={cn(
+                        "text-[11px] font-[700] px-3 py-1 rounded-full shrink-0 whitespace-nowrap",
+                        getStatusStyle(evt.status)
+                      )}
+                    >
+                      {formatStatus(evt.status)}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </section>
 
@@ -248,46 +284,45 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="bg-white border-[1.5px] border-[#e8ecf2] rounded-[12px] overflow-hidden">
-              {applicants.map((a, i) => (
-                <div
-                  key={a.id}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 hover:bg-[#f9fafb] transition-colors",
-                    i !== applicants.length - 1 && "border-b border-[#e8ecf2]"
-                  )}
-                >
-                  {/* Avatar */}
-                  <div className="w-8 h-8 rounded-full bg-[#e6f4f5] flex items-center justify-center text-[11px] font-[700] text-[#0D7377] shrink-0">
-                    {getInitials(a.name)}
-                  </div>
-
-                  {/* Name + ID */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-[600] text-[#0f1828] truncate">{a.name}</p>
-                    <p className="text-[11px] text-[#aab4c8]">{a.id}</p>
-                  </div>
-
-                  {/* Position */}
-                  <span className="hidden sm:block text-[12px] text-[#8896b0] w-[120px] truncate">
-                    {a.role}
-                  </span>
-
-                  {/* Status chip */}
-                  <span
+              {applicants.length === 0 ? (
+                <p className="text-[14px] text-[#8896b0] text-center py-8">No applications yet</p>
+              ) : (
+                applicants.map((a: any, i: number) => (
+                  <div
+                    key={a.id}
                     className={cn(
-                      "text-[10px] font-[700] px-2.5 py-0.5 rounded-full shrink-0",
-                      appStatusStyle[a.status]
+                      "flex items-center gap-3 px-4 py-3 hover:bg-[#f9fafb] transition-colors",
+                      i !== applicants.length - 1 && "border-b border-[#e8ecf2]"
                     )}
                   >
-                    {a.status}
-                  </span>
+                    <div className="w-8 h-8 rounded-full bg-[#e6f4f5] flex items-center justify-center text-[11px] font-[700] text-[#0D7377] shrink-0">
+                      {getInitials(a.name)}
+                    </div>
 
-                  {/* Date */}
-                  <span className="hidden sm:block text-[11px] text-[#aab4c8] w-[52px] text-right shrink-0">
-                    {a.date}
-                  </span>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-[600] text-[#0f1828] truncate">{a.name}</p>
+                      <p className="text-[11px] text-[#aab4c8]">{a.id}</p>
+                    </div>
+
+                    <span className="hidden sm:block text-[12px] text-[#8896b0] w-[120px] truncate">
+                      {a.role}
+                    </span>
+
+                    <span
+                      className={cn(
+                        "text-[10px] font-[700] px-2.5 py-0.5 rounded-full shrink-0",
+                        appStatusStyle[a.status as keyof typeof appStatusStyle] || "bg-[#f5f6fa] text-[#8896b0]"
+                      )}
+                    >
+                      {a.status}
+                    </span>
+
+                    <span className="hidden sm:block text-[11px] text-[#aab4c8] w-[52px] text-right shrink-0">
+                      {a.date}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </section>
         </div>

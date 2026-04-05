@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Users,
@@ -11,103 +12,145 @@ import {
   Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { dashboardApi, announcementsApi } from "@/lib/api";
 
-/* ═══════════════════════════════════════════════════════════
-   DATA
-   ═══════════════════════════════════════════════════════════ */
-
-const kpiCards = [
-  {
-    icon: Building2,
-    value: "40",
-    label: "Registered Clubs",
-    iconColor: "#0D7377",
-    iconBg: "#e6f4f5",
-  },
-  {
-    icon: Users,
-    value: "1,240",
-    label: "Student Accounts",
-    iconColor: "#0D7377",
-    iconBg: "#e6f4f5",
-  },
-  {
-    icon: Clock,
-    value: "5",
-    label: "Events Awaiting Review",
-    iconColor: "#D97706",
-    iconBg: "#FEF3C7",
-  },
-  {
-    icon: Calendar,
-    value: "18",
-    label: "Scheduled Events",
-    iconColor: "#0D7377",
-    iconBg: "#e6f4f5",
-  },
-  {
-    icon: UserPlus,
-    value: "7",
-    label: "Active Cycles",
-    iconColor: "#22c55e",
-    iconBg: "#dcfce7",
-  },
-];
-
-const pendingEvents = [
-  {
-    name: "Intra-University Hackathon",
-    club: "NSU ACM SC",
-    day: "10",
-    month: "Mar",
-    venue: "LIB 602",
-    conflict: false,
-  },
-  {
-    name: "Spring Fest Stage Show",
-    club: "NSU Drama Club",
-    day: "10",
-    month: "Mar",
-    venue: "Open Air Theatre",
-    conflict: true,
-  },
-  {
-    name: "Robot Showcase 2026",
-    club: "NSU Robotics Club",
-    day: "14",
-    month: "Mar",
-    venue: "Plaza Area",
-    conflict: false,
-  },
-];
-
-const activities = [
-  { color: "#22c55e", text: 'NSU ACM SC submitted "Hackathon" for approval', time: "2h ago" },
-  { color: "#0D7377", text: "New student registered: alif.shahriar@northsouth.edu", time: "3h ago" },
-  { color: "#F59E0B", text: "NSU Finance Club opened recruitment cycle", time: "5h ago" },
-  { color: "#EF4444", text: '"Spring Gala" rejected by Super Admin', time: "1d ago" },
-  { color: "#22c55e", text: '"Brandverse 2026" approved and published', time: "1d ago" },
-];
-
-const clubHealth = [
-  { name: "NSU ACM SC", members: "1,250", fill: 72, healthy: true },
-  { name: "NSU Drama Club", members: "420", fill: 55, healthy: true },
-  { name: "NSU Finance Club", members: "680", fill: 38, healthy: false },
-  { name: "NSU Robotics", members: "850", fill: 20, healthy: false },
-  { name: "NSU Photography", members: "630", fill: 80, healthy: true },
-];
-
-const announcements = [
+const announcementsMock = [
   { title: "Spring Fest 2026 registrations are now open", status: "Live" as const, date: "Mar 1" },
   { title: "Updated Code of Conduct for all clubs", status: "Live" as const, date: "Feb 20" },
   { title: "Mid-semester break event guidelines", status: "Draft" as const, date: "—" },
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   PAGE
-   ═══════════════════════════════════════════════════════════ */
-
 export default function SuperDashboardPage() {
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [announcements, setAnnouncements] = useState<any[]>(announcementsMock);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      if (user?.role !== "SUPER_ADMIN") return;
+
+      try {
+        const [dashboard, announcementsData] = await Promise.all([
+          dashboardApi.getSuperAdminStats(),
+          announcementsApi.getAll(),
+        ]);
+        setDashboardData(dashboard);
+        setAnnouncements(announcementsData.length > 0 ? announcementsData : announcementsMock);
+      } catch (err) {
+        console.error("Failed to fetch dashboard:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, [user]);
+
+  const kpiCards = dashboardData ? [
+    {
+      icon: Building2,
+      value: String(dashboardData.stats?.totalClubs || 0),
+      label: "Registered Clubs",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Users,
+      value: String(dashboardData.stats?.totalUsers || 0),
+      label: "Student Accounts",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Clock,
+      value: String(dashboardData.stats?.pendingEvents || 0),
+      label: "Events Awaiting Review",
+      iconColor: "#D97706",
+      iconBg: "#FEF3C7",
+    },
+    {
+      icon: Calendar,
+      value: String(dashboardData.stats?.scheduledEvents || 0),
+      label: "Scheduled Events",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: UserPlus,
+      value: String(dashboardData.stats?.activeCycles || 0),
+      label: "Active Cycles",
+      iconColor: "#22c55e",
+      iconBg: "#dcfce7",
+    },
+  ] : [
+    {
+      icon: Building2,
+      value: "—",
+      label: "Registered Clubs",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Users,
+      value: "—",
+      label: "Student Accounts",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: Clock,
+      value: "—",
+      label: "Events Awaiting Review",
+      iconColor: "#D97706",
+      iconBg: "#FEF3C7",
+    },
+    {
+      icon: Calendar,
+      value: "—",
+      label: "Scheduled Events",
+      iconColor: "#0D7377",
+      iconBg: "#e6f4f5",
+    },
+    {
+      icon: UserPlus,
+      value: "—",
+      label: "Active Cycles",
+      iconColor: "#22c55e",
+      iconBg: "#dcfce7",
+    },
+  ];
+
+  const pendingEvents = dashboardData?.recentActivities?.map((evt: any) => {
+    const startDate = new Date(evt.startDate);
+    const months = ["Mar", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
+    return {
+      name: evt.title,
+      club: evt.club?.name || "Unknown Club",
+      day: String(startDate.getDate()),
+      month: months[startDate.getMonth()],
+      venue: evt.venue || "TBD",
+      conflict: false,
+    };
+  }) || [];
+
+  const clubHealth = dashboardData?.clubs?.map((club: any) => {
+    const maxMembers = 1500;
+    const fillPercent = Math.round((club._count?.members / maxMembers) * 100);
+    return {
+      name: club.name,
+      members: String(club._count?.members || 0),
+      fill: fillPercent,
+      healthy: fillPercent >= 40,
+    };
+  }) || [];
+
+  const activities = pendingEvents.map((evt: any, i: number) => ({
+    color: evt.status === "APPROVED" ? "#22c55e" : evt.status === "REJECTED" ? "#EF4444" : "#0D7377",
+    text: `${evt.club} submitted "${evt.name}" for approval`,
+    time: "Recently",
+  }));
   return (
     <div className="flex flex-col gap-8 pb-10">
 

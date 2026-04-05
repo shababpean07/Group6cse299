@@ -31,14 +31,8 @@ export default function LandingLoginPage() {
       return;
     }
 
-    /*
-     * ROLE-REDIRECT LOGIC:
-     * On successful login, server reads role from JWT/NextAuth session:
-     *   role === "student"     -> /dashboard         (STU-01)
-     *   role === "club_admin"  -> /admin/dashboard    (ADM-01)
-     *   role === "super_admin" -> /super/dashboard    (SUP-01)
-     * For demo purposes, we just redirect to /dashboard
-     */
+    // On successful login, route by role
+    // For demo purposes, default to student
     router.push("/dashboard");
   };
 
@@ -337,6 +331,73 @@ export default function LandingLoginPage() {
                   Create an account
                 </Link>
               </span>
+            </div>
+
+            {/* Demo Role Selector */}
+            <div className="mt-6">
+              {/* Divider with centered label */}
+              <div className="relative flex items-center justify-center mb-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t" style={{ borderColor: "#e8ecf2" }} />
+                </div>
+                <span
+                  className="relative bg-white px-[10px] font-sans font-[700] uppercase"
+                  style={{
+                    fontSize: "10px",
+                    letterSpacing: "0.14em",
+                    color: "#aab4c8",
+                  }}
+                >
+                  Demo Access
+                </span>
+              </div>
+
+              {/* Helper text */}
+              <p
+                className="text-center font-sans mb-3"
+                style={{ fontSize: "11.5px", color: "#aab4c8" }}
+              >
+                Skip login — choose a role to preview
+              </p>
+
+              {/* Role buttons grid */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* Student */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/dashboard")}
+                  className="flex flex-col items-center gap-1.5 rounded-[8px] border-[1.5px] border-[#e8ecf2] bg-[#f5f6fa] py-[10px] px-[8px] cursor-pointer transition-all duration-150 ease-in-out hover:border-[#0D7377] hover:bg-[rgba(13,115,119,0.06)] group"
+                >
+                  <span style={{ fontSize: "20px", lineHeight: 1 }}>🎓</span>
+                  <span className="font-syne font-[700] uppercase tracking-[0.08em] text-[#0f1828] group-hover:text-[#0D7377] transition-colors duration-150" style={{ fontSize: "10px" }}>
+                    Student
+                  </span>
+                </button>
+
+                {/* Club Admin */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/admin/dashboard")}
+                  className="flex flex-col items-center gap-1.5 rounded-[8px] border-[1.5px] border-[#e8ecf2] bg-[#f5f6fa] py-[10px] px-[8px] cursor-pointer transition-all duration-150 ease-in-out hover:border-[#0D7377] hover:bg-[rgba(13,115,119,0.06)] group"
+                >
+                  <span style={{ fontSize: "20px", lineHeight: 1 }}>🏛️</span>
+                  <span className="font-syne font-[700] uppercase tracking-[0.08em] text-[#0f1828] group-hover:text-[#0D7377] transition-colors duration-150" style={{ fontSize: "10px" }}>
+                    Club Admin
+                  </span>
+                </button>
+
+                {/* Super Admin */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/super/dashboard")}
+                  className="flex flex-col items-center gap-1.5 rounded-[8px] border-[1.5px] border-[#e8ecf2] bg-[#f5f6fa] py-[10px] px-[8px] cursor-pointer transition-all duration-150 ease-in-out hover:border-[#0D7377] hover:bg-[rgba(13,115,119,0.06)] group"
+                >
+                  <span style={{ fontSize: "20px", lineHeight: 1 }}>⚡</span>
+                  <span className="font-syne font-[700] uppercase tracking-[0.08em] text-[#0f1828] group-hover:text-[#0D7377] transition-colors duration-150" style={{ fontSize: "10px" }}>
+                    Super Admin
+                  </span>
+                </button>
+              </div>
             </div>
 
           </div>

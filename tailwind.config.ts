@@ -21,6 +21,24 @@ const config: Config = {
         sidebar: {
           bg: '#101828',
           border: '#1d2b3a',
+          sup: '#0a0f1a',
+          supBorder: '#151e2e',
+        },
+        gold: {
+          DEFAULT: '#D97706',
+          light: '#FEF3C7',
+        },
+        amber: {
+          DEFAULT: '#F59E0B',
+          light: '#FEF3C7',
+        },
+        green: {
+          DEFAULT: '#22c55e',
+          light: '#dcfce7',
+        },
+        red: {
+          DEFAULT: '#EF4444',
+          light: '#fee2e2',
         },
         surface: '#ffffff',
         canvas: '#f5f6fa',

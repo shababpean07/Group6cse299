@@ -1,0 +1,77 @@
+================================================================================
+IEEE FORMAT - PROGRESS REPORT UPDATE 5
+================================================================================
+
+M.A. Rahman Junaid, Shabab Alam Pean, Mohammad Safayet Hossain Alif, 
+Syed Mohim Rahman Preo
+Department of Electronics and Communication Engineering
+North South University, Dhaka, Bangladesh
+2311947642, 2231829042, 2232562642, 2232812642
+
+--------------------------------------------------------------------------------
+
+Abstract—This report presents the fifth milestone of NSU ClubHub, a centralized 
+club management portal for North South University. This update completes the backend 
+API development phase with Node.js, Express, Prisma ORM, and PostgreSQL. The system 
+features JWT authentication, role-based access control, 25+ API endpoints, and 
+complete frontend integration. All mock data has been replaced with dynamic API calls, 
+completing the transition from frontend-only prototype to full-stack application.
+
+Keywords—Club Management, Backend API, Node.js, Express, Prisma, PostgreSQL, 
+          JWT Authentication, North South University
+
+I. INTRODUCTION
+NSU ClubHub is a web application enabling students to discover clubs, track 
+recruitment, and stay updated on campus events. Update 5 transitions the system 
+from frontend-only prototype to full-stack application with complete backend 
+integration.
+
+II. BACKEND ARCHITECTURE
+Built using Node.js and Express.js with modular route-based design. Server runs 
+on port 3001 with CORS enabled. JWT middleware protects routes with role-based 
+authorization. Separate controllers handle authentication, clubs, events, recruitment, 
+announcements, users, and dashboard statistics.
+
+III. DATABASE SCHEMA (DB-01–DB-09)
+Nine interconnected models using Prisma ORM:
+- User (DB-01): Student accounts with email, password, name, student ID, role
+- Club (DB-02): Name, description, category, logo, cover image
+- ClubMember (DB-03): Membership with role tracking
+- Event (DB-04): Title, description, category, dates, venue, approval workflow
+- RSVP (DB-05): Event attendance
+- RecruitmentCycle (DB-06): Recruitment periods with slot limits
+- Application (DB-07): Position, status tracking (New, Interview, Accepted, Rejected)
+- Announcement (DB-08): Platform-wide notices
+- Notification (DB-09): User alerts
+
+IV. API ENDPOINTS (API-01–API-25)
+25+ RESTful endpoints:
+- Auth: POST /register, /login
+- Clubs: GET, POST, PUT, DELETE with filters
+- Events: CRUD with RSVP functionality
+- Recruitment: Cycles and application management
+- Dashboard: Role-specific statistics
+
+V. AUTHENTICATION SYSTEM
+JWT-based authentication with bcrypt. Three roles: STUDENT, CLUB_ADMIN, 
+SUPER_ADMIN. Protected routes verify tokens and check roles. Test accounts: 
+admin@nsu.edu (Super Admin), arif@nsu.edu (Club Admin), student@nsu.edu (Student).
+
+VI. FRONTEND INTEGRATION
+Next.js frontend connected to API using React Context and hooks. AuthContext 
+manages global state. api.ts provides typed endpoint functions. All dashboards 
+fetch live data replacing mock data.
+
+VII. CONCLUSION
+Update 5 completes the backend phase with 25+ endpoints, secure authentication, 
+and database schema. Frontend integration enables dynamic data flow. Future work 
+includes image upload, email notifications, and production deployment.
+
+REFERENCES
+[1]  Next.js Documentation. [Online]. Available: https://nextjs.org/docs
+[2]  Prisma Documentation. [Online]. Available: https://pris.ly/docs
+[3]  Express.js Documentation. [Online]. Available: https://expressjs.com
+[4]  PostgreSQL Documentation. [Online]. Available: https://www.postgresql.org/docs/
+[5]  JWT.io Documentation. [Online]. Available: https://jwt.io/
+
+================================================================================

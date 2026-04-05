@@ -1,0 +1,189 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  CLUB_ADMIN
+  SUPER_ADMIN
+}
+
+enum ClubCategory {
+  Academic
+  Cultural
+  Sports
+  Tech
+  Arts
+}
+
+enum EventStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  NEW
+  INTERVIEW
+  ACCEPTED
+  REJECTED
+}
+
+enum RecruitmentStatus {
+  OPEN
+  CLOSED
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  LIVE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  studentId    String?  @unique
+  role         UserRole @default(STUDENT)
+  clubId       String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  clubMemberships  ClubMember[]
+  clubAdmin        Club?        @relation(fields: [clubId], references: [id])
+  applications     Application[]
+  eventsCreated    Event[]       @relation("EventCreator")
+  notifications    Notification[]
+  rsvps           RSVP[]
+  announcements   Announcement[]
+}
+
+model Club {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String
+  category    ClubCategory
+  logo        String?
+  coverImage  String?
+  established DateTime?
+  email       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  members          ClubMember[]
+  admin            User?
+  events           Event[]
+  recruitmentCycles RecruitmentCycle[]
+  announcements    Announcement[]
+}
+
+model ClubMember {
+  id        String   @id @default(cuid())
+  userId    String
+  clubId    String
+  role      String   @default("member")
+  joinedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  club Club @relation(fields: [clubId], references: [id])
+
+  @@unique([userId, clubId])
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  category    ClubCategory
+  startDate   DateTime
+  endDate     DateTime
+  venue       String?
+  isOnline    Boolean     @default(false)
+  meetingLink String?
+  status      EventStatus @default(PENDING_APPROVAL)
+  clubId      String
+  creatorId   String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  club    Club     @relation(fields: [clubId], references: [id])
+  creator User     @relation("EventCreator", fields: [creatorId], references: [id])
+  rsvps   RSVP[]
+}
+
+model RSVP {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
+}
+
+model RecruitmentCycle {
+  id          String           @id @default(cuid())
+  clubId      String
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  maxSlots    Int              @default(50)
+  status      RecruitmentStatus @default(OPEN)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  club         Club          @relation(fields: [clubId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  userId      String
+  cycleId     String
+  position    String
+  status      ApplicationStatus @default(NEW)
+  resumeUrl   String?
+  coverLetter String?
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user  User               @relation(fields: [userId], references: [id])
+  cycle RecruitmentCycle   @relation(fields: [cycleId], references: [id])
+
+  @@unique([userId, cycleId, position])
+}
+
+model Announcement {
+  id        String             @id @default(cuid())
+  title     String
+  content   String
+  status    AnnouncementStatus @default(DRAFT)
+  clubId    String?
+  authorId  String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  club   Club?  @relation(fields: [clubId], references: [id])
+  author User   @relation(fields: [authorId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}

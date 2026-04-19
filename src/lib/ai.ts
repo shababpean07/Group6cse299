@@ -19,22 +19,47 @@ function mockAiResponse(message: string, history: HistoryEntry[] = []): string {
   return `You asked: "${message}". I can help with clubs, events, or recruitment information on NSU ClubHub.`;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+async function callBackendAi(message: string): Promise<string> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}/ai/chat`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ message }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(error.error || 'AI chat failed');
+  }
+
+  const data = await response.json();
+  return data.reply || `You said: ${message}`;
+}
+
 // Public API for frontend to call AI chat capability
 export const aiApi = {
-  chat: (payload: { message: string; history: HistoryEntry[] }): Promise<{ reply: string }> => {
-    const useBackend = typeof window !== 'undefined' && (process.env.NEXT_PUBLIC_AI_BACKEND_ENABLED === '1');
-    if (useBackend) {
-      // If a real backend is wired, you'd implement a fetch here, e.g.:
-      // return apiClient.post<{ reply: string }>('/ai/chat', payload);
-      // For safety in this environment, fall back to mock if backend is not actually wired.
-      return Promise.resolve({ reply: mockAiResponse(payload.message, payload.history) });
+  chat: async (payload: { message: string; history: HistoryEntry[] }): Promise<{ reply: string }> => {
+    try {
+      const reply = await callBackendAi(payload.message);
+      return { reply };
+    } catch (error) {
+      console.warn('AI backend unavailable, using mock response:', error);
+      return new Promise((resolve) => {
+        const latency = 150 + Math.random() * 450;
+        setTimeout(() => {
+          resolve({ reply: mockAiResponse(payload.message, payload.history) });
+        }, latency);
+      });
     }
-    // Client-side mock (default)
-    return new Promise((resolve) => {
-      const latency = 150 + Math.random() * 450;
-      setTimeout(() => {
-        resolve({ reply: mockAiResponse(payload.message, payload.history) });
-      }, latency);
-    });
   },
 };

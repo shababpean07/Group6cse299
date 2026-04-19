@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Clock, MapPin, Calendar, ExternalLink } from "lucide-react";
 import { eventsApi } from "@/lib/api";
+import { useQrTicket } from "@/context/QrTicketContext";
 
 const FILTERS = ["All", "Academic", "Cultural", "Sports", "Tech", "Arts"];
 const VIEWS = ["Month", "Week", "Agenda"];
@@ -50,6 +51,7 @@ export default function EventCalendarPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { RSVP } = useQrTicket();
 
   const today = new Date();
   const currentMonth = today.getMonth() + 1;
@@ -325,7 +327,10 @@ export default function EventCalendarPage() {
                           </div>
                         </div>
 
-                        <button className="h-10 px-6 w-full sm:w-auto text-[13px] font-bold text-[#0D7377] bg-white border-[1.5px] border-[#0D7377] rounded-[8px] hover:bg-[#0D7377] hover:text-white transition-all shrink-0 mt-2 sm:mt-0">
+                        <button 
+                          onClick={() => RSVP(evt.id)}
+                          className="h-10 px-6 w-full sm:w-auto text-[13px] font-bold text-[#0D7377] bg-white border-[1.5px] border-[#0D7377] rounded-[8px] hover:bg-[#0D7377] hover:text-white transition-all shrink-0 mt-2 sm:mt-0"
+                        >
                           RSVP Now
                         </button>
                       </div>

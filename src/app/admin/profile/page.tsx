@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   Lock,
   Check,
@@ -9,6 +11,7 @@ import {
   Globe,
   Instagram,
   X,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +70,9 @@ function uid() {
    ═══════════════════════════════════════════════════════════ */
 
 export default function ClubProfilePage() {
+  const { logout } = useAuth();
+  const router = useRouter();
+  
   /* ── Form state ─────────────────────────────────────── */
   const [shortDesc, setShortDesc] = useState(
     "Technology community building future innovators at NSU"
@@ -169,6 +175,16 @@ export default function ClubProfilePage() {
 
           {/* Desktop buttons */}
           <div className="hidden sm:flex items-center gap-3">
+            <button
+              onClick={() => {
+                logout();
+                router.push("/");
+              }}
+              className="flex items-center gap-2 h-10 px-4 rounded-[8px] bg-[#fee2e2] text-[#EF4444] font-syne font-[700] text-[13px] hover:bg-[#fecaca] transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Log Out
+            </button>
             <button
               onClick={handleDiscard}
               className="h-10 px-5 rounded-[8px] border-[1.5px] border-[#e8ecf2] text-[#8896b0] font-syne font-[700] text-[13px] hover:bg-[#f5f6fa] transition-colors"
@@ -525,16 +541,26 @@ export default function ClubProfilePage() {
         </div>
 
         {/* ── MOBILE STICKY FOOTER ────────────────────────── */}
-        <div className="fixed bottom-16 left-0 right-0 z-30 flex sm:hidden items-center gap-3 px-5 py-3 bg-white border-t border-[#e8ecf2]">
+        <div className="fixed bottom-16 left-0 right-0 z-30 flex sm:hidden flex-wrap items-center gap-3 px-5 py-3 bg-white border-t border-[#e8ecf2] shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+          <button
+            onClick={() => {
+              logout();
+              router.push("/");
+            }}
+            className="flex flex-1 min-w-[30%] items-center justify-center gap-1.5 h-10 rounded-[8px] bg-[#fee2e2] text-[#EF4444] font-syne font-[700] text-[13px] hover:bg-[#fecaca] transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Out
+          </button>
           <button
             onClick={handleDiscard}
-            className="flex-1 h-10 rounded-[8px] border-[1.5px] border-[#e8ecf2] text-[#8896b0] font-syne font-[700] text-[13px] hover:bg-[#f5f6fa] transition-colors"
+            className="flex-[1.5] min-w-[30%] h-10 rounded-[8px] border-[1.5px] border-[#e8ecf2] text-[#8896b0] font-syne font-[700] text-[13px] hover:bg-[#f5f6fa] transition-colors"
           >
             Discard
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 h-10 bg-[#0D7377] text-white rounded-[8px] font-syne font-[700] text-[13px] hover:bg-[#0a5c60] transition-all shadow-sm"
+            className="flex-[2] min-w-[40%] h-10 bg-[#0D7377] text-white rounded-[8px] font-syne font-[700] text-[13px] hover:bg-[#0a5c60] transition-all shadow-sm"
           >
             Save Changes
           </button>

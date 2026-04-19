@@ -11,8 +11,11 @@ import {
   Building2,
   Settings,
   Bell,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 /* ── Nav config ────────────────────────────────────────── */
 const sidebarNav = [
@@ -50,6 +53,8 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [notifOpen, setNotifOpen] = useState(false);
+  const { logout } = useAuth();
+  const router = useRouter();
 
   const pageTitle = pageTitles[pathname] ?? "Dashboard";
 
@@ -136,6 +141,16 @@ export default function AdminLayout({
             >
               AR
             </Link>
+            <button
+              onClick={() => {
+                logout();
+                router.push("/");
+              }}
+              className="ml-2 w-8 h-8 flex items-center justify-center text-[#EF4444] hover:bg-[#fee2e2] rounded-[8px] transition-colors"
+              title="Log Out"
+            >
+              <LogOut className="w-[16px] h-[16px]" />
+            </button>
           </div>
         </header>
 

@@ -1,13 +1,17 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Lock, Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/AuthContext"
+import { Lock, Eye, EyeOff, LogOut } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 
 type Tab = "profile" | "password" | "notifications"
 
 export default function SettingsPage() {
+  const { logout } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>("profile")
   
   // Profile State
@@ -142,7 +146,17 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center mt-[16px]">
+              <button 
+                onClick={() => {
+                  logout()
+                  router.push("/")
+                }}
+                className="flex items-center gap-[6px] text-[var(--red)] text-[13px] font-[700] hover:bg-[#fee2e2] px-[12px] py-[8px] rounded-[8px] transition-colors"
+              >
+                <LogOut size={16} />
+                Log Out
+              </button>
               <button 
                 onClick={handleSaveProfile}
                 className="bg-[var(--dark)] text-white text-[13px] font-[700] px-[20px] h-[38px] rounded-[10px] hover:bg-[#2a2a3e] transition-colors"

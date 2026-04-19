@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Calendar, UserPlus, Settings } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, Users, Calendar, UserPlus, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -16,6 +17,8 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
+  const router = useRouter();
 
   return (
     <aside className="hidden md:flex w-[228px] bg-sidebar-bg flex-col border-r border-sidebar-border h-full flex-shrink-0 z-20">
@@ -58,15 +61,28 @@ export function Sidebar() {
 
       {/* Bottom User Profile */}
       <div className="p-4 border-t border-sidebar-border">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
-          <Avatar className="w-9 h-9 border border-white/10">
-            <AvatarImage src="" />
-            <AvatarFallback className="bg-teal text-white text-xs font-bold">AS</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">Alif Shahriar</span>
-            <span className="text-xs text-white/45">Student</span>
+        <div className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer">
+          <div className="flex items-center gap-3">
+            <Avatar className="w-9 h-9 border border-white/10">
+              <AvatarImage src="" />
+              <AvatarFallback className="bg-teal text-white text-xs font-bold">AS</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-white">Alif Shahriar</span>
+              <span className="text-xs text-white/45">Student</span>
+            </div>
           </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              logout();
+              router.push("/");
+            }}
+            className="p-1.5 rounded-md text-white/45 hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
+            title="Log Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>

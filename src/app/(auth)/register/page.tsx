@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const passwordStrength = useMemo(() => {
@@ -77,9 +78,17 @@ export default function RegisterPage() {
         password: formData.password,
         studentId: formData.studentId || undefined,
       });
-      router.push("/dashboard");
+      setSuccess(true);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      if (errorMessage.includes("Email already registered")) {
+        setError("This email is already registered. Please try another or login.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -108,6 +117,18 @@ export default function RegisterPage() {
                   </svg>
                 </div>
                 {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-600 text-sm p-4 rounded-xl flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-semibold">Account created successfully!</p>
+                  <p className="text-green-500 text-xs">Redirecting to dashboard...</p>
+                </div>
               </div>
             )}
 

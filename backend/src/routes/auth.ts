@@ -7,15 +7,18 @@ import prisma from '../config/database.js';
 const router = Router();
 
 const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().min(2),
+  email: z.string().email("Invalid email format").refine(
+    (email) => email.endsWith("@northsouth.edu") || email.endsWith("@gmail.com") || email.endsWith("@yahoo.com"),
+    "Please use your NSU email (@northsouth.edu) or a valid email"
+  ),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
   studentId: z.string().optional(),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
 });
 
 router.post('/register', async (req: Request, res: Response) => {

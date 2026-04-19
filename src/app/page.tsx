@@ -33,7 +33,7 @@ export default function LandingLoginPage() {
 
     // On successful login, route by role
     // For demo purposes, default to student
-    router.push("/dashboard");
+    router.push("/(app)/dashboard");
   };
 
   const isFormValid = email.length > 0 && password.length > 0;
@@ -97,7 +97,7 @@ export default function LandingLoginPage() {
             New student?
           </span>
           <Link 
-            href="/signup" 
+            href="/auth/register" 
             className="h-9 px-4 rounded-[6px] border border-[#0D7377] text-[#0D7377] font-syne font-[700] text-[13px] bg-[rgba(13,115,119,0.12)] hover:bg-[rgba(13,115,119,0.25)] transition-colors flex items-center justify-center"
           >
             Create Account
@@ -270,9 +270,9 @@ export default function LandingLoginPage() {
                   <label className="font-sans font-[600] text-[11.5px] text-[#0f1828]">
                     Password
                   </label>
-                  <Link href="/forgot-password" className="font-sans font-[600] text-[11.5px] text-[#0D7377] hover:underline">
+                  <span className="font-sans font-[600] text-[11.5px] text-[#8896b0] cursor-not-allowed">
                     Forgot password?
-                  </Link>
+                  </span>
                 </div>
                 <div className="relative">
                   <input
@@ -327,7 +327,7 @@ export default function LandingLoginPage() {
             <div className="mt-6 text-center">
               <span className="font-sans text-[12.5px] text-[#8896b0]">
                 New to NSU ClubHub?{" "}
-                <Link href="/signup" className="text-[#0a5c60] font-[600] hover:underline">
+                <Link href="/auth/register" className="text-[#0a5c60] font-[600] hover:underline">
                   Create an account
                 </Link>
               </span>
@@ -365,7 +365,7 @@ export default function LandingLoginPage() {
                 {/* Student */}
                 <button
                   type="button"
-                  onClick={() => router.push("/dashboard")}
+                  onClick={() => router.push("/(app)/dashboard")}
                   className="flex flex-col items-center gap-1.5 rounded-[8px] border-[1.5px] border-[#e8ecf2] bg-[#f5f6fa] py-[10px] px-[8px] cursor-pointer transition-all duration-150 ease-in-out hover:border-[#0D7377] hover:bg-[rgba(13,115,119,0.06)] group"
                 >
                   <span style={{ fontSize: "20px", lineHeight: 1 }}>🎓</span>

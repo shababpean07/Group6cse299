@@ -76,7 +76,7 @@ export default function ErrorPage() {
           <div className="my-2 h-px w-full bg-[rgba(245,158,11,0.2)]" />
 
           <Link
-            href="/dashboard"
+            href="/(app)/dashboard"
             className="flex w-full items-center justify-between gap-3 py-1.5 text-teal-light transition-colors duration-200 hover:text-white"
           >
             <span className="flex items-center gap-2.5 text-[14px] font-medium">

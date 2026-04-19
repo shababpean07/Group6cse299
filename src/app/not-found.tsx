@@ -59,7 +59,7 @@ export default function NotFound() {
           style={{ animationDelay: "0.24s" }}
         >
           <Link
-            href="/dashboard"
+            href="/(app)/dashboard"
             className="inline-flex h-11 items-center justify-center rounded-md bg-teal px-6 font-syne text-[13px] font-bold text-white transition-colors duration-200 hover:bg-teal-dark"
           >
             Go to Dashboard

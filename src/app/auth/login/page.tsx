@@ -31,7 +31,7 @@ export default function LoginPage() {
       } else if (user.role === "CLUB_ADMIN") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/dashboard");
+        router.push("/(app)/dashboard");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
@@ -69,7 +69,7 @@ export default function LoginPage() {
       } else if (user.role === "CLUB_ADMIN") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/dashboard");
+        router.push("/(app)/dashboard");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Quick login failed.");
@@ -162,9 +162,9 @@ export default function LoginPage() {
                 />
                 <span className="text-sm text-[#64748b]">Remember me</span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-[#0D7377] hover:text-[#0a5c60] font-medium transition-colors">
+              <span className="text-sm text-[#8896b0] cursor-not-allowed">
                 Forgot password?
-              </Link>
+              </span>
             </div>
 
             {/* Submit Button */}
@@ -198,7 +198,7 @@ export default function LoginPage() {
 
             {/* Create Account Button */}
             <Link
-              href="/register"
+              href="/auth/register"
               className="w-full h-12 bg-white border-2 border-[#0D7377] text-[#0D7377] font-syne font-bold rounded-xl hover:bg-[#0D7377] hover:text-white transition-all flex items-center justify-center gap-2"
             >
               Create New Account
@@ -248,7 +248,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-[#64748b] text-sm">
               Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-[#0D7377] font-semibold hover:text-[#0a5c60] transition-colors inline-flex items-center gap-1">
+              <Link href="/auth/register" className="text-[#0D7377] font-semibold hover:text-[#0a5c60] transition-colors inline-flex items-center gap-1">
                 Create Account
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -258,7 +258,7 @@ export default function LoginPage() {
 
         {/* Guest Link */}
         <div className="mt-6 text-center">
-          <Link href="/dashboard" className="text-[#64748b] text-sm hover:text-white transition-colors inline-flex items-center gap-2">
+          <Link href="/(app)/dashboard" className="text-[#64748b] text-sm hover:text-white transition-colors inline-flex items-center gap-2">
             Continue as Guest
             <ArrowRight className="w-4 h-4" />
           </Link>

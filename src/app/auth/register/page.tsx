@@ -80,7 +80,7 @@ export default function RegisterPage() {
       });
       setSuccess(true);
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/(app)/dashboard");
       }, 1500);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Registration failed. Please try again.";
@@ -325,7 +325,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-[#64748b] text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="text-[#0D7377] font-semibold hover:text-[#0a5c60] transition-colors inline-flex items-center gap-1">
+              <Link href="/auth/login" className="text-[#0D7377] font-semibold hover:text-[#0a5c60] transition-colors inline-flex items-center gap-1">
                 Sign In
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -335,7 +335,7 @@ export default function RegisterPage() {
 
         {/* Guest Link */}
         <div className="mt-6 text-center">
-          <Link href="/dashboard" className="text-[#64748b] text-sm hover:text-white transition-colors inline-flex items-center gap-2">
+          <Link href="/(app)/dashboard" className="text-[#64748b] text-sm hover:text-white transition-colors inline-flex items-center gap-2">
             Continue as Guest
             <ArrowRight className="w-4 h-4" />
           </Link>

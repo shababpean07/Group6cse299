@@ -13,6 +13,7 @@ import {
   Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationPanel } from "@/components/layout/notification-panel";
 
 /* ── Nav config ────────────────────────────────────────── */
 const sidebarNav = [
@@ -177,6 +178,8 @@ export default function AdminLayout({
           );
         })}
       </nav>
+
+      <NotificationPanel isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
     </div>
   );
 }

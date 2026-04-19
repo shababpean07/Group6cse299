@@ -172,6 +172,7 @@ function EventCard({
   const [rejectReason, setRejectReason] = useState("");
   const [proceedAnyway, setProceedAnyway] = useState(false);
   const [conflictModal, setConflictModal] = useState(false);
+  const isActionable = event.status === "Pending" || event.status === "Conflict";
 
   const handleApprove = () => {
     if (event.status === "Conflict" && !proceedAnyway) {
@@ -278,55 +279,77 @@ function EventCard({
 
         {/* ZONE C — Action Panel */}
         <div className="lg:w-[220px] shrink-0 border-t lg:border-t-0 lg:border-l border-[#e8ecf2] pt-4 lg:pt-0 lg:pl-5 flex flex-col gap-3">
-          {!rejectOpen ? (
-            <>
-              <button
-                onClick={handleApprove}
-                className="w-full h-10 rounded-[8px] bg-[#22c55e] text-white font-syne font-[700] text-[13px] hover:bg-[#16a34a] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
-              >
-                <Check className="w-4 h-4" />
-                Approve
-              </button>
-              <button
-                onClick={() => setRejectOpen(true)}
-                className="w-full h-10 rounded-[8px] bg-white border-[1.5px] border-[#EF4444] text-[#EF4444] font-syne font-[700] text-[13px] hover:bg-[#fee2e2] transition-colors flex items-center justify-center gap-1.5"
-              >
-                <X className="w-4 h-4" />
-                Reject
-              </button>
-            </>
-          ) : (
-            <div className="flex flex-col gap-3 animate-fade-up opacity-0" style={{ animationFillMode: "both" }}>
-              <textarea
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="e.g. Date conflict with university exam schedule..."
-                className="w-full h-20 rounded-[8px] border-[1.5px] border-[#e8ecf2] p-3 text-[13px] text-[#0f1828] placeholder:text-[#aab4c8] resize-none focus:outline-none focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444] transition-colors"
-                autoFocus
-              />
-              <div className="flex items-center gap-2">
+          {isActionable ? (
+            !rejectOpen ? (
+              <>
                 <button
-                  onClick={handleReject}
-                  disabled={!rejectReason.trim()}
-                  className={cn(
-                    "flex-1 h-10 rounded-[8px] font-syne font-[700] text-[13px] text-white transition-all",
-                    rejectReason.trim()
-                      ? "bg-[#EF4444] hover:bg-[#dc2626] hover:scale-[1.02]"
-                      : "bg-[#d4d8e0] cursor-not-allowed"
-                  )}
+                  onClick={handleApprove}
+                  className="w-full h-10 rounded-[8px] bg-[#22c55e] text-white font-syne font-[700] text-[13px] hover:bg-[#16a34a] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                 >
-                  Confirm Rejection
+                  <Check className="w-4 h-4" />
+                  Approve
                 </button>
                 <button
-                  onClick={() => {
-                    setRejectOpen(false);
-                    setRejectReason("");
-                  }}
-                  className="h-10 px-4 rounded-[8px] text-[13px] font-[600] text-[#8896b0] hover:text-[#0f1828] hover:bg-[#f5f6fa] transition-colors"
+                  onClick={() => setRejectOpen(true)}
+                  className="w-full h-10 rounded-[8px] bg-white border-[1.5px] border-[#EF4444] text-[#EF4444] font-syne font-[700] text-[13px] hover:bg-[#fee2e2] transition-colors flex items-center justify-center gap-1.5"
                 >
-                  Cancel
+                  <X className="w-4 h-4" />
+                  Reject
                 </button>
+              </>
+            ) : (
+              <div className="flex flex-col gap-3 animate-fade-up opacity-0" style={{ animationFillMode: "both" }}>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="e.g. Date conflict with university exam schedule..."
+                  className="w-full h-20 rounded-[8px] border-[1.5px] border-[#e8ecf2] p-3 text-[13px] text-[#0f1828] placeholder:text-[#aab4c8] resize-none focus:outline-none focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444] transition-colors"
+                  autoFocus
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleReject}
+                    disabled={!rejectReason.trim()}
+                    className={cn(
+                      "flex-1 h-10 rounded-[8px] font-syne font-[700] text-[13px] text-white transition-all",
+                      rejectReason.trim()
+                        ? "bg-[#EF4444] hover:bg-[#dc2626] hover:scale-[1.02]"
+                        : "bg-[#d4d8e0] cursor-not-allowed"
+                    )}
+                  >
+                    Confirm Rejection
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRejectOpen(false);
+                      setRejectReason("");
+                    }}
+                    className="h-10 px-4 rounded-[8px] text-[13px] font-[600] text-[#8896b0] hover:text-[#0f1828] hover:bg-[#f5f6fa] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
+            )
+          ) : (
+            <div
+              className={cn(
+                "w-full h-10 rounded-[8px] border-[1.5px] font-syne font-[700] text-[13px] flex items-center justify-center gap-1.5",
+                event.status === "Approved" && "border-[#22c55e]/30 bg-[#dcfce7] text-[#15803d]",
+                event.status === "Rejected" && "border-[#EF4444]/30 bg-[#fee2e2] text-[#b91c1c]"
+              )}
+            >
+              {event.status === "Approved" ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Approved
+                </>
+              ) : (
+                <>
+                  <X className="w-4 h-4" />
+                  Rejected
+                </>
+              )}
             </div>
           )}
 

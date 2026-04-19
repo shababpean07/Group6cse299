@@ -104,7 +104,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         {/* HEADER ROW */}
         <div className="h-[58px] flex items-center justify-between px-5 border-b border-[#efeff5] shrink-0 bg-white z-10">
           <div className="flex items-center gap-3">
-            <h2 className="font-outfit font-[700] text-[16px] text-[#0f1828]">Notifications</h2>
+            <h2 className="font-syne font-[700] text-[16px] text-[#0f1828]">Notifications</h2>
             {unreadCount > 0 && (
               <div className="bg-[#f0eeff] text-[#7C5CFC] px-[8px] py-[2px] rounded-[6px] text-[11px] font-[700]">
                 {unreadCount} new

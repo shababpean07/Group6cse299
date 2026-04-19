@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, Plus_Jakarta_Sans } from "next/font/google";
 import { Providers } from "./providers";
+import { ToastContainer } from "@/components/ui/status-toast";
 import "./globals.css";
 
 const syne = Syne({ 
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <Providers>
           {children}
+          <ToastContainer />
         </Providers>
       </body>
     </html>

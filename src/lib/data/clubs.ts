@@ -181,4 +181,64 @@ export const CLUBS_DATA = [
       { id: 1, name: "Pohela Boishakh 1433", day: "14", month: "APR", color: "text-[#8b5cf6]", bg: "bg-[#f5f3ff]" }
     ]
   },
+  {
+    id: "10",
+    name: "NSU Environment Club",
+    category: "Academic",
+    desc: "Promoting sustainability and environmental awareness on campus.",
+    members: 520,
+    accent: { bg: "bg-[#eef6ff]", border: "border-[#10b981]", text: "text-[#10b981]", hex: "#10b981" },
+    est: "2012",
+    about: "The Environment Club focuses on green initiatives, campus cleanups, tree planting, and sustainability awareness.",
+    recruitment: { isOpen: true, deadline: "Mar 30, 2026" },
+    execBoard: [
+      { id: 1, name: "Riya Akter", role: "President", initials: "RA" },
+      { id: 2, name: "Imran Khan", role: "Vice President", initials: "IK" },
+      { id: 3, name: "Sadia Noor", role: "General Secretary", initials: "SN" },
+      { id: 4, name: "Amit Roy", role: "Events Coordinator", initials: "AR" },
+    ],
+    events: [
+      { id: 1, name: "Campus Clean-up Day", day: "08", month: "APR", color: "text-[#10b981]", bg: "bg-[#ecfdf5]" }
+    ]
+  },
+  {
+    id: "11",
+    name: "NSU Music Club",
+    category: "Arts",
+    desc: "Nurturing musical talent and performances on campus.",
+    members: 340,
+    accent: { bg: "bg-[#f0f9ff]", border: "border-[#1d4ed8]", text: "text-[#1d4ed8]", hex: "#1d4ed8" },
+    est: "2015",
+    about: "The NSU Music Club brings together singers and instrumentalists for regular jam sessions and performances.",
+    recruitment: { isOpen: true, deadline: "Apr 15, 2026" },
+    execBoard: [
+      { id: 1, name: "Anika Rahman", role: "President", initials: "AR" },
+      { id: 2, name: "Kabir Chowdhury", role: "Vice President", initials: "KC" },
+      { id: 3, name: "Mina Akter", role: "Musical Director", initials: "MA" },
+      { id: 4, name: "Tariq Islam", role: "Events Secretary", initials: "TI" },
+    ],
+    events: [
+      { id: 1, name: "Spring Concert", day: "20", month: "APR", color: "text-[#1d4ed8]", bg: "bg-[#eff6ff]" }
+    ]
+  },
+  {
+    id: "12",
+    name: "NSU Athletics Club",
+    category: "Sports",
+    desc: "Promoting physical fitness and sportsmanship.",
+    members: 980,
+    accent: { bg: "bg-[#e6f7ff]", border: "border-[#0ea5e9]", text: "text-[#0ea5e9]", hex: "#0ea5e9" },
+    est: "2019",
+    about: "The Athletics Club promotes campus-wide sports, intra-dept tournaments, and fitness activities.",
+    recruitment: { isOpen: true, deadline: "May 01, 2026" },
+    execBoard: [
+      { id: 1, name: "Zainul Abedin", role: "President", initials: "ZA" },
+      { id: 2, name: "Riya Rahman", role: "Vice President", initials: "RR" },
+      { id: 3, name: "Anik Chowdhury", role: "Sports Secretary", initials: "AC" },
+      { id: 4, name: "Fatima Noor", role: "Treasurer", initials: "FN" },
+    ],
+    events: [
+      { id: 1, name: "Spring Inter-dept Football", day: "12", month: "APR", color: "text-[#f59e0b]", bg: "bg-[#fffbeb]" }
+    ]
+  }
 ];

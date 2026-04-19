@@ -125,4 +125,22 @@ router.get('/club-admin', authenticate, authorize(UserRole.CLUB_ADMIN), async (r
   }
 });
 
+// Student dashboard statistics endpoint
+router.get('/student', authenticate, authorize(UserRole.STUDENT), async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const [joinedClubs, upcomingRSVPs, myApplications, openCycles] = await Promise.all([
+      prisma.clubMember.count({ where: { userId } }),
+      prisma.rsvp.count({ where: { userId, event: { startDate: { gte: new Date() } } } }),
+      prisma.application.count({ where: { userId } }),
+      prisma.recruitmentCycle.count({ where: { status: 'OPEN' } }),
+    ]);
+
+    res.json({ stats: { joinedClubs, upcomingRSVPs, myApplications, openRecruitments: openCycles } });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch student dashboard stats' });
+  }
+});
+
 export default router;

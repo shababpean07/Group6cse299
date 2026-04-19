@@ -16,6 +16,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "express-rate-limit": "^6.6.0",
     "@prisma/client": "^7.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

@@ -61,6 +61,9 @@ async function main() {
         email: 'finance@nsu.edu',
       },
     }),
+    prisma.club.upsert({ where: { name: 'NSU Photography Club' }, update: {}, create: { name: 'NSU Photography Club', description: 'Capturing moments on campus', category: 'Arts', email: 'photo@nsu.edu' } }),
+    prisma.club.upsert({ where: { name: 'NSU Debate Club' }, update: {}, create: { name: 'NSU Debate Club', description: 'Fostering critical thinking and public speaking', category: 'Cultural', email: 'debate@nsu.edu' } }),
+    prisma.club.upsert({ where: { name: 'NSU Athletics Club' }, update: {}, create: { name: 'NSU Athletics Club', description: 'Promoting physical fitness and sportsmanship', category: 'Sports', email: 'athletics@nsu.edu' } }),
   ]);
   console.log(`Created ${clubs.length} clubs`);
 
@@ -100,7 +103,7 @@ async function main() {
         startDate: new Date('2026-03-10T09:00:00'),
         endDate: new Date('2026-03-10T17:00:00'),
         venue: 'LIB 602',
-        status: 'PENDING_APPROVAL',
+        status: 'APPROVED',
         clubId: clubs[0].id,
         creatorId: clubAdmin.id,
       },
@@ -113,14 +116,13 @@ async function main() {
         startDate: new Date('2026-03-14T11:00:00'),
         endDate: new Date('2026-03-14T16:00:00'),
         venue: 'Plaza Area',
-        status: 'PENDING_APPROVAL',
+        status: 'APPROVED',
         clubId: clubs[1].id,
         creatorId: clubAdmin.id,
       },
     }),
   ]);
-  console.log(`Created ${events.length} events`);
-
+  // Create recruitment cycle first to be used by applications
   const recruitmentCycle = await prisma.recruitmentCycle.create({
     data: {
       title: 'Spring 2026 Recruitment',
@@ -133,6 +135,42 @@ async function main() {
     },
   });
   console.log('Created recruitment cycle:', recruitmentCycle.title);
+
+  // RSVP examples (now that recruitmentCycle exists)
+  try {
+    if (student?.id && events[0]?.id) {
+      await prisma.rsvp.create({ data: { userId: student.id, eventId: events[0].id } });
+    }
+    if (student?.id && events[1]?.id) {
+      await prisma.rsvp.create({ data: { userId: student.id, eventId: events[1].id } });
+    }
+  } catch {
+    // ignore if duplicates
+  }
+
+  // Applications to recruitment cycle
+  try {
+    if (student?.id && recruitmentCycle?.id) {
+      await prisma.application.create({
+        data: {
+          userId: student.id,
+          cycleId: recruitmentCycle.id,
+          position: 'Volunteer',
+          status: 'NEW',
+        },
+      });
+      await prisma.application.create({
+        data: {
+          userId: student.id,
+          cycleId: recruitmentCycle.id,
+          position: 'Engineer',
+          status: 'NEW',
+        },
+      });
+    }
+  } catch {
+    // ignore
+  }
 
   console.log('Seeding complete!');
 }

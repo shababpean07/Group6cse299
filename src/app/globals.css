@@ -45,11 +45,6 @@
     animation: fadeUp 0.5s ease-out forwards;
     opacity: 0;
   }
-  .animate-fade-up-scale {
-    animation: fadeUpScale 0.5s ease-out forwards;
-    opacity: 0;
-    transform: scale(0.97);
-  }
   .animate-shimmer {
     background: linear-gradient(90deg, #f0f2f7 25%, #e4e8f0 50%, #f0f2f7 75%);
     background-size: 200% 100%;
@@ -62,18 +57,6 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  .animate-toast-in {
-    animation: toastIn 0.3s ease-out forwards;
-  }
-
-  .animate-toast-out {
-    animation: toastOut 0.25s ease-in forwards;
-  }
-
-  .animate-toast-progress {
-    animation: toastProgress linear forwards;
-  }
 }
 
 @keyframes fadeUp {
@@ -84,24 +67,4 @@
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-
-@keyframes fadeUpScale {
-  0% { opacity: 0; transform: translateY(14px) scale(0.97); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes toastIn {
-  0% { opacity: 0; transform: translateX(110%); }
-  100% { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes toastOut {
-  0% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(110%); }
-}
-
-@keyframes toastProgress {
-  0% { transform: scaleX(1); }
-  100% { transform: scaleX(0); }
 }

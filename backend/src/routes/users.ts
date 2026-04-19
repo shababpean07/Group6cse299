@@ -88,6 +88,31 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// Current authenticated user shortcut
+router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const current = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        studentId: true,
+        role: true,
+        clubId: true,
+      },
+    });
+
+    if (!current) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(current);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch current user' });
+  }
+});
+
 router.patch('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;

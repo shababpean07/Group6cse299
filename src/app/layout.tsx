@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Syne, Plus_Jakarta_Sans } from "next/font/google";
 import { Providers } from "./providers";
-import { ToastContainer } from "@/components/ui/status-toast";
+import { QrTicketProvider } from "@/context/QrTicketContext";
+import { AiChatWidget } from "@/components/ai/AiChatWidget";
 import "./globals.css";
 
 const syne = Syne({ 
@@ -29,10 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${plusJakartaSans.variable}`}>
       <body className="font-sans antialiased">
-        <Providers>
-          {children}
-          <ToastContainer />
-        </Providers>
+        <QrTicketProvider>
+          <Providers>
+            {children}
+          </Providers>
+          <AiChatWidget />
+        </QrTicketProvider>
       </body>
     </html>
   );

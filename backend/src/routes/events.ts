@@ -207,7 +207,7 @@ router.post('/:id/rsvp', authenticate, async (req: AuthRequest, res: Response) =
   try {
     const { id } = req.params;
 
-    const existing = await prisma.rSVP.findUnique({
+    const existing = await prisma.rsvp.findUnique({
       where: {
         userId_eventId: {
           userId: req.user!.id,
@@ -220,14 +220,16 @@ router.post('/:id/rsvp', authenticate, async (req: AuthRequest, res: Response) =
       return res.status(400).json({ error: 'Already RSVPed' });
     }
 
-    const rsvp = await prisma.rSVP.create({
+    const rsvp = await prisma.rsvp.create({
       data: {
         userId: req.user!.id,
         eventId: id,
       },
     });
 
-    res.status(201).json(rsvp);
+    // Generate a simple ticket string to be returned to the frontend for QR code generation
+    const ticket = `EV-${id}-USER-${req.user!.id}-TICKET-${Date.now()}`;
+    res.status(201).json({ rsvp, ticket });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to RSVP' });
@@ -238,7 +240,7 @@ router.delete('/:id/rsvp', authenticate, async (req: AuthRequest, res: Response)
   try {
     const { id } = req.params;
 
-    await prisma.rSVP.delete({
+    await prisma.rsvp.delete({
       where: {
         userId_eventId: {
           userId: req.user!.id,

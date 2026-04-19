@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Eye, EyeOff, Mail, Lock, LogIn, Sparkles, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, LogIn, Sparkles, ArrowRight, UserPlus } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -185,6 +185,25 @@ export default function LoginPage() {
                 </>
               )}
             </button>
+
+            {/* Divider with Create Account */}
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#e8ecf2]" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-4 bg-white text-sm text-[#8896b0]">or</span>
+              </div>
+            </div>
+
+            {/* Create Account Button */}
+            <Link
+              href="/register"
+              className="w-full h-12 bg-white border-2 border-[#0D7377] text-[#0D7377] font-syne font-bold rounded-xl hover:bg-[#0D7377] hover:text-white transition-all flex items-center justify-center gap-2"
+            >
+              Create New Account
+              <UserPlus className="w-5 h-5" />
+            </Link>
           </form>
 
           {/* Divider */}

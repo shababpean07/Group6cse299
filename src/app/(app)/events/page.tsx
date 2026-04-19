@@ -328,7 +328,7 @@ export default function EventCalendarPage() {
                         </div>
 
                         <button 
-                          onClick={() => RSVP(evt.id)}
+                          onClick={() => RSVP(evt.id, { title: evt.name, date: evt.date, time: evt.time, venue: evt.venue, clubName: evt.club })}
                           className="h-10 px-6 w-full sm:w-auto text-[13px] font-bold text-[#0D7377] bg-white border-[1.5px] border-[#0D7377] rounded-[8px] hover:bg-[#0D7377] hover:text-white transition-all shrink-0 mt-2 sm:mt-0"
                         >
                           RSVP Now

@@ -2,42 +2,47 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAiChat } from "@/hooks/useAiChat";
+import { Send, X, MessageCircle, Bot, User, Sparkles, Minimize2, Trash2 } from "lucide-react";
 
-// Lightweight AI chat widget mounted in the bottom-right corner.
 export function AiChatWidget() {
-  const { messages, isLoading, send } = useAiChat();
+  const { messages, isLoading, send, clear } = useAiChat();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Reset input when opening the widget
   useEffect(() => {
-    if (open) setInput("");
+    if (open) {
+      inputRef.current?.focus();
+    }
   }, [open]);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading, open]);
 
+  useEffect(() => {
+    if (isLoading) {
+      setIsTyping(true);
+      const timer = setTimeout(() => setIsTyping(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, messages]);
+
   const onSend = () => {
     const text = input.trim();
-    if (!text) return;
-    // Use the hook-provided send function to process the user message and fetch AI reply
+    if (!text || isLoading) return;
     send(text);
     setInput("");
   };
 
-  // Keyboard: Enter to send
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       onSend();
     }
   };
-
-  // Since useAiChat manages its own send, we expose a small input handler below (binding to the same send is achieved via the inner API).
-  // For demonstration purposes, we wire a manual send button that pushes the input as a user message via a separate API.
-  // To keep this widget minimal and self-contained, the actual send will be wired by calling window.dispatchEvent if needed in a fuller integration.
 
   return (
     <>
@@ -45,50 +50,350 @@ export function AiChatWidget() {
         <button
           aria-label="Open AI chat"
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 rounded-full bg-blue-600 text-white w-12 h-12 drop-shadow-lg hover:bg-blue-700 flex items-center justify-center"
-          title="AI Chat"
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            width: 60,
+            height: 60,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #0D7377 0%, #14FFEC 100%)',
+            border: 'none',
+            boxShadow: '0 8px 25px rgba(13,115,119,0.4)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9998,
+            transition: 'transform 0.2s, box-shadow 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 12px 35px rgba(13,115,119,0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(13,115,119,0.4)';
+          }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M4 5h16a2 2 0 012 2v8a2 2 0 01-2 2H9l-5 4V7a2 2 0 012-2z" stroke="white" strokeWidth="2" fill="none"/>
-          </svg>
+          <MessageCircle style={{ width: 26, height: 26, color: '#fff' }} />
         </button>
       )}
 
       {open && (
-        <div className="fixed bottom-6 right-6 w-96 h-[420px] max-h-[70vh] bg-white border rounded-md shadow-xl flex flex-col overflow-hidden" role="dialog" aria-label="AI Chat Widget">
-          <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50">
-            <span className="font-semibold">AI Chat</span>
-            <button onClick={() => setOpen(false)} aria-label="Close" className="text-gray-600 hover:text-gray-800">✕</button>
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          width: 400,
+          height: 560,
+          maxHeight: '80vh',
+          background: '#fff',
+          borderRadius: 20,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          zIndex: 9999,
+        }}>
+          {/* Header */}
+          <div style={{
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, #0D7377 0%, #14FFEC 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Bot style={{ width: 22, height: 22, color: '#fff' }} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#fff' }}>AI Assistant</h3>
+                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Sparkles style={{ width: 12, height: 12 }} />
+                  Always here to help
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={clear}
+                title="Clear chat"
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: 10,
+                  width: 36,
+                  height: 36,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+              >
+                <Trash2 style={{ width: 16, height: 16, color: '#fff' }} />
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: 10,
+                  width: 36,
+                  height: 36,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+              >
+                <Minimize2 style={{ width: 16, height: 16, color: '#fff' }} />
+              </button>
+            </div>
           </div>
-          <div className="flex-1 p-3 overflow-auto bg-white" style={{minHeight: 0}}>
+
+          {/* Messages */}
+          <div style={{
+            flex: 1,
+            padding: 20,
+            overflowY: 'auto',
+            background: '#f8fafc',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}>
             {messages.length === 0 && (
-              <div className="text-sm text-gray-500">Start the conversation by typing a message.</div>
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+              }}>
+                <div style={{
+                  width: 80,
+                  height: 80,
+                  margin: '0 auto 16px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, rgba(13,115,119,0.1) 0%, rgba(20,255,236,0.1) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Sparkles style={{ width: 36, height: 36, color: '#0D7377' }} />
+                </div>
+                <h4 style={{ margin: '0 0 8px', fontSize: 16, color: '#1e293b' }}>Welcome to NSU ClubHub AI!</h4>
+                <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>
+                  I can help you with:<br/>
+                  • Finding clubs and events<br/>
+                  • Understanding recruitment cycles<br/>
+                  • Getting event details and schedules
+                </p>
+              </div>
             )}
-            {/** Render chat messages from hook state */}
-            {Array.isArray(messages) && messages.map((m, idx) => (
-              <div key={idx} className={`my-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs px-3 py-2 rounded-lg ${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                  {m.content}
+
+            {messages.map((m, idx) => (
+              <div 
+                key={idx} 
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+                  animation: 'fadeIn 0.2s ease-out',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '85%' }}>
+                  {m.role === 'ai' && (
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: '#0D7377',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <Bot style={{ width: 14, height: 14, color: '#fff' }} />
+                    </div>
+                  )}
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    background: m.role === 'user' 
+                      ? 'linear-gradient(135deg, #0D7377 0%, #14FFEC 100%)' 
+                      : '#fff',
+                    color: m.role === 'user' ? '#fff' : '#1e293b',
+                    fontSize: 14,
+                    lineHeight: 1.5,
+                    boxShadow: m.role === 'ai' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                    border: m.role === 'ai' ? '1px solid #e2e8f0' : 'none',
+                  }}>
+                    {m.content}
+                  </div>
+                  {m.role === 'user' && (
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: '#6366f1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <User style={{ width: 14, height: 14, color: '#fff' }} />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
+
+            {isTyping && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: '#0D7377',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Bot style={{ width: 14, height: 14, color: '#fff' }} />
+                </div>
+                <div style={{
+                  padding: '12px 16px',
+                  borderRadius: 18,
+                  background: '#fff',
+                  border: '1px solid #e2e8f0',
+                  display: 'flex',
+                  gap: 4,
+                }}>
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#0D7377',
+                    animation: 'bounce 1.4s infinite ease-in-out both',
+                    animationDelay: '0s',
+                  }} />
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#0D7377',
+                    animation: 'bounce 1.4s infinite ease-in-out both',
+                    animationDelay: '0.2s',
+                  }} />
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#0D7377',
+                    animation: 'bounce 1.4s infinite ease-in-out both',
+                    animationDelay: '0.4s',
+                  }} />
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
           </div>
-          <div className="p-2 border-t">
-            <div className="flex gap-2 items-center">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask me anything..."
-                className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-                disabled={false}
-              />
-              <button onClick={onSend} className="px-4 py-2 bg-blue-600 text-white rounded-md">Send</button>
+
+          {/* Input */}
+          <div style={{
+            padding: 16,
+            background: '#fff',
+            borderTop: '1px solid #e2e8f0',
+          }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+              <div style={{
+                flex: 1,
+                position: 'relative',
+              }}>
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me anything..."
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    padding: '14px 20px',
+                    paddingRight: 50,
+                    borderRadius: 14,
+                    border: '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                    fontSize: 14,
+                    outline: 'none',
+                    resize: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#0D7377';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(13,115,119,0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e2e8f0';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+              <button
+                onClick={onSend}
+                disabled={!input.trim() || isLoading}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 14,
+                  background: input.trim() && !isLoading
+                    ? 'linear-gradient(135deg, #0D7377 0%, #14FFEC 100%)'
+                    : '#e2e8f0',
+                  border: 'none',
+                  cursor: input.trim() && !isLoading ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  if (input.trim() && !isLoading) {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <Send style={{ width: 18, height: 18, color: input.trim() && !isLoading ? '#fff' : '#94a3b8' }} />
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0.8); }
+          40% { transform: scale(1.2); }
+        }
+      `}</style>
     </>
   );
 }

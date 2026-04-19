@@ -48,13 +48,13 @@ export default function LoginPage() {
       let userPassword = "";
       
       if (role === "superadmin") {
-        userEmail = "admin@nsu.edu";
+        userEmail = "admin@northsouth.edu";
         userPassword = "admin123";
       } else if (role === "clubadmin") {
-        userEmail = "arif@nsu.edu";
+        userEmail = "arif@northsouth.edu";
         userPassword = "clubadmin123";
       } else {
-        userEmail = "student@nsu.edu";
+        userEmail = "student@northsouth.edu";
         userPassword = "student123";
       }
       

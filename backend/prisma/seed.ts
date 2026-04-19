@@ -9,10 +9,10 @@ async function main() {
 
   const superAdminPassword = await bcrypt.hash('admin123', 10);
   const superAdmin = await prisma.user.upsert({
-    where: { email: 'admin@nsu.edu' },
+    where: { email: 'admin@northsouth.edu' },
     update: {},
     create: {
-      email: 'admin@nsu.edu',
+      email: 'admin@northsouth.edu',
       password: superAdminPassword,
       name: 'System Admin',
       role: 'SUPER_ADMIN',
@@ -69,10 +69,10 @@ async function main() {
 
   const clubAdminPassword = await bcrypt.hash('clubadmin123', 10);
   const clubAdmin = await prisma.user.upsert({
-    where: { email: 'arif@nsu.edu' },
+    where: { email: 'arif@northsouth.edu' },
     update: {},
     create: {
-      email: 'arif@nsu.edu',
+      email: 'arif@northsouth.edu',
       password: clubAdminPassword,
       name: 'Arif Rahman',
       role: 'CLUB_ADMIN',
@@ -83,10 +83,10 @@ async function main() {
 
   const studentPassword = await bcrypt.hash('student123', 10);
   const student = await prisma.user.upsert({
-    where: { email: 'student@nsu.edu' },
+    where: { email: 'student@northsouth.edu' },
     update: {},
     create: {
-      email: 'student@nsu.edu',
+      email: 'student@northsouth.edu',
       password: studentPassword,
       name: 'Test Student',
       role: 'STUDENT',

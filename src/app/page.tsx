@@ -33,7 +33,7 @@ export default function LandingLoginPage() {
 
     // On successful login, route by role
     // For demo purposes, default to student
-    router.push("/(app)/dashboard");
+    router.push("/dashboard");
   };
 
   const isFormValid = email.length > 0 && password.length > 0;
@@ -365,7 +365,7 @@ export default function LandingLoginPage() {
                 {/* Student */}
                 <button
                   type="button"
-                  onClick={() => router.push("/(app)/dashboard")}
+                  onClick={() => router.push("/dashboard")}
                   className="flex flex-col items-center gap-1.5 rounded-[8px] border-[1.5px] border-[#e8ecf2] bg-[#f5f6fa] py-[10px] px-[8px] cursor-pointer transition-all duration-150 ease-in-out hover:border-[#0D7377] hover:bg-[rgba(13,115,119,0.06)] group"
                 >
                   <span style={{ fontSize: "20px", lineHeight: 1 }}>🎓</span>

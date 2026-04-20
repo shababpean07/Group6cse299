@@ -31,7 +31,7 @@ export default function LoginPage() {
       } else if (user.role === "CLUB_ADMIN") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/(app)/dashboard");
+        router.push("/dashboard");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
@@ -69,7 +69,7 @@ export default function LoginPage() {
       } else if (user.role === "CLUB_ADMIN") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/(app)/dashboard");
+        router.push("/dashboard");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Quick login failed.");

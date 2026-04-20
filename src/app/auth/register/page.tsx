@@ -80,7 +80,7 @@ export default function RegisterPage() {
       });
       setSuccess(true);
       setTimeout(() => {
-        router.push("/(app)/dashboard");
+        router.push("/dashboard");
       }, 1500);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Registration failed. Please try again.";

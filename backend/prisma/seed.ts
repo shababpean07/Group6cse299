@@ -22,48 +22,75 @@ async function main() {
 
   const clubs = await Promise.all([
     prisma.club.upsert({
-      where: { name: 'NSU ACM SC' },
+      where: { name: 'ACM' },
       update: {},
       create: {
-        name: 'NSU ACM SC',
-        description: 'Advancing computing as a science & profession.',
+        name: 'ACM',
+        description: 'Association for Computing Machinery - Advancing computing as a science and profession.',
         category: 'Tech',
         email: 'acm@nsu.edu',
       },
     }),
     prisma.club.upsert({
-      where: { name: 'NSU Robotics Club' },
+      where: { name: 'Earth Club' },
       update: {},
       create: {
-        name: 'NSU Robotics Club',
-        description: 'Building the future of automation and AI.',
-        category: 'Tech',
-        email: 'robotics@nsu.edu',
+        name: 'Earth Club',
+        description: 'Promoting environmental awareness and sustainability on campus.',
+        category: 'Cultural',
+        email: 'earth@nsu.edu',
       },
     }),
     prisma.club.upsert({
-      where: { name: 'NSU Drama Club' },
+      where: { name: 'NSU Sports Club' },
       update: {},
       create: {
-        name: 'NSU Drama Club',
-        description: 'Expressing emotions through the power of theatre.',
-        category: 'Arts',
-        email: 'drama@nsu.edu',
+        name: 'NSU Sports Club',
+        description: 'Promoting physical fitness and sportsmanship among students.',
+        category: 'Sports',
+        email: 'sports@nsu.edu',
       },
     }),
     prisma.club.upsert({
-      where: { name: 'NSU Finance Club' },
+      where: { name: 'NSU Debate Club' },
       update: {},
       create: {
-        name: 'NSU Finance Club',
-        description: 'Bridging the gap between theory and finance.',
+        name: 'NSU Debate Club',
+        description: 'Fostering critical thinking and public speaking skills.',
+        category: 'Cultural',
+        email: 'debate@nsu.edu',
+      },
+    }),
+    prisma.club.upsert({
+      where: { name: 'NSU Moot Club' },
+      update: {},
+      create: {
+        name: 'NSU Moot Club',
+        description: 'Legal debate and moot court competitions.',
         category: 'Academic',
-        email: 'finance@nsu.edu',
+        email: 'moot@nsu.edu',
       },
     }),
-    prisma.club.upsert({ where: { name: 'NSU Photography Club' }, update: {}, create: { name: 'NSU Photography Club', description: 'Capturing moments on campus', category: 'Arts', email: 'photo@nsu.edu' } }),
-    prisma.club.upsert({ where: { name: 'NSU Debate Club' }, update: {}, create: { name: 'NSU Debate Club', description: 'Fostering critical thinking and public speaking', category: 'Cultural', email: 'debate@nsu.edu' } }),
-    prisma.club.upsert({ where: { name: 'NSU Athletics Club' }, update: {}, create: { name: 'NSU Athletics Club', description: 'Promoting physical fitness and sportsmanship', category: 'Sports', email: 'athletics@nsu.edu' } }),
+    prisma.club.upsert({
+      where: { name: 'NSUSS' },
+      update: {},
+      create: {
+        name: 'NSUSS',
+        description: 'North South University Science Society.',
+        category: 'Academic',
+        email: 'nsuss@nsu.edu',
+      },
+    }),
+    prisma.club.upsert({
+      where: { name: 'NSU Communication Club' },
+      update: {},
+      create: {
+        name: 'NSU Communication Club',
+        description: 'Enhancing communication and interpersonal skills.',
+        category: 'Cultural',
+        email: 'communication@nsu.edu',
+      },
+    }),
   ]);
   console.log(`Created ${clubs.length} clubs`);
 
